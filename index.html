@@ -1,151 +1,512 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>2D Pro - Version 2.1 (Hierarchical & Full Transparent)</title>
-    <link rel="stylesheet" href="css/styles.css">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>2D Pro - Version 2.2 (Fully Responsive System)</title>
+    <link rel="stylesheet" href="css/styles.css" />
     <style>
-        .result-board, .detail-container { margin-top: 20px; display: none; }
-        .session-result { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 12px; margin-bottom: 15px; }
-        .res-row { display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 14px; color: #4b5563; }
-        .res-row.bold { font-weight: bold; color: #1e293b; border-top: 1px dashed #cbd5e1; padding-top: 4px; margin-top: 4px; }
-        .res-row.input-origin { color: #475569; background-color: #f1f5f9; padding: 5px 8px; border-radius: 4px; font-size: 13px; margin-bottom: 8px; }
-        .summary-box { border-radius: 10px; padding: 15px; text-align: center; margin-top: 12px; }
-        .day-profit-box { background: #eff6ff; border: 2px solid #3b82f6; }
-        .day-myprofit-box { background: #ecfdf5; border: 2px solid #10b981; }
-        .summary-box h3 { font-size: 14px; margin-bottom: 5px; }
-        .final-amount { font-size: 24px; font-weight: bold; }
-        
-        .block-card { background: #ffffff; border: 2px solid #cbd5e1; border-radius: 12px; padding: 12px; margin-top: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
-        .block-header { font-size: 13px; font-weight: bold; color: #1e40af; margin-bottom: 10px; text-align: center; background: #eff6ff; padding: 7px; border-radius: 6px; border: 1px solid #bfdbfe; }
-        .w-table { width: 100%; border-collapse: collapse; font-size: 11px; text-align: center; }
-        .w-table th, .w-table td { border: 1px solid #e2e8f0; padding: 8px 3px; }
-        .w-table th { background: #f1f5f9; }
-        .w-table tbody tr { cursor: pointer; transition: 0.1s; }
-        .w-table tbody tr:hover { background-color: #f0f9ff; }
-        .w-table tr.total-row { background: #f8fafc; font-weight: bold; border-top: 2px solid #94a3b8; cursor: default; }
-        .w-table tr.total-row:hover { background: #f8fafc; }
-        
-        .clickable-block { background: #f8fafc; border: 1px solid #cbd5e1; padding: 12px; border-radius: 8px; margin-bottom: 10px; cursor: pointer; }
-        .clickable-block:hover { border-color: #3b82f6; background: #f0f9ff; }
-        #calendarContainer { display: none; margin-bottom: 15px; }
-        .calendar-select { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #3b82f6; font-size: 15px; font-weight: bold; background-color: #f0f9ff; color: #1e3a8a; text-align: center; }
-        
-        .back-nav-btn { background: #64748b; color: white; border: none; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer; margin-bottom: 10px; display: inline-flex; align-items: center; }
-        .back-nav-btn:hover { background: #475569; }
-        
-        .minus-text { color: #ef4444; }
-        .plus-text { color: #10b981; }
-        .blue-text { color: #2563eb; }
+      /* ==========================================================================
+           🌟 VERSION 2.2 RESPONSIVE & HYBRID CSS CORE
+           ========================================================================== */
+
+      /* Layout Base Container */
+      .app-container {
+        width: 100%;
+        max-width: 1000px; /* Laptop/Desktop တွင် သင့်တော်သော ပမာဏ */
+        margin: 0 auto;
+        padding: 15px;
+        box-sizing: border-box;
+      }
+
+      /* Tab Switcher Layout */
+      .tabs {
+        display: flex;
+        width: 100%;
+        margin-bottom: 20px;
+        gap: 8px;
+      }
+      .tab-btn {
+        flex: 1;
+        padding: 12px;
+        font-size: 14px;
+        font-weight: bold;
+        border-radius: 8px;
+        cursor: pointer;
+        text-align: center;
+      }
+
+      /* Input Grid Responders */
+      .grid-2 {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 15px;
+        margin-bottom: 15px;
+      }
+
+      /* Result Cards & Detail Boxes */
+      .result-board,
+      .detail-container {
+        margin-top: 20px;
+        display: none;
+      }
+      .session-result {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 10px;
+        padding: 15px;
+        margin-bottom: 15px;
+      }
+      .res-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 8px;
+        font-size: 14px;
+        color: #4b5563;
+      }
+      .res-row.bold {
+        font-weight: bold;
+        color: #1e293b;
+        border-top: 1px dashed #cbd5e1;
+        padding-top: 6px;
+        margin-top: 6px;
+      }
+      .res-row.input-origin {
+        color: #475569;
+        background-color: #f1f5f9;
+        padding: 6px 10px;
+        border-radius: 6px;
+        font-size: 13px;
+        margin-bottom: 10px;
+      }
+
+      .summary-box {
+        border-radius: 10px;
+        padding: 15px;
+        text-align: center;
+        margin-top: 12px;
+      }
+      .day-profit-box {
+        background: #eff6ff;
+        border: 2px solid #3b82f6;
+      }
+      .day-myprofit-box {
+        background: #ecfdf5;
+        border: 2px solid #10b981;
+      }
+      .final-amount {
+        font-size: 24px;
+        font-weight: bold;
+      }
+
+      /* 📱 CRITICAL FIX: WEEKLY BLOCK TABLE RESPONSIVE ENGINE */
+      .block-card {
+        background: #ffffff;
+        border: 2px solid #cbd5e1;
+        border-radius: 12px;
+        padding: 15px;
+        margin-top: 20px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+      }
+      .block-header {
+        font-size: 14px;
+        font-weight: bold;
+        color: #1e40af;
+        margin-bottom: 12px;
+        text-align: center;
+        background: #eff6ff;
+        padding: 10px;
+        border-radius: 6px;
+        border: 1px solid #bfdbfe;
+      }
+
+      /* Table Wrapper with Horizontal Scrolling */
+      .table-responsive-wrapper {
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch; /* iOS Smooth Scroll */
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+      }
+
+      .w-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13px;
+        text-align: center;
+        min-width: 650px; /* ⚠️ ဖုန်းတွင် အတင်းအကျပ်ညှပ်မသွားစေရန် အနိမ့်ဆုံးအကျယ် သတ်မှတ်ခြင်း */
+      }
+      .w-table th,
+      .w-table td {
+        border: 1px solid #e2e8f0;
+        padding: 12px 8px;
+      }
+      .w-table th {
+        background: #f1f5f9;
+        font-weight: 600;
+        color: #334155;
+      }
+
+      /* 💡 ပထမဆုံး Column (ရက်စွဲ) ကို ဖုန်းထဲ၌ Scroll ဆွဲသော်လည်း ပျောက်မသွားအောင် Fixed ထားပေးခြင်း */
+      .w-table th:first-child,
+      .w-table td:first-child {
+        position: -webkit-sticky;
+        position: sticky;
+        left: 0;
+        background: #f8fafc;
+        box-shadow: 2px 0 5px rgba(0, 0, 0, 0.05);
+        z-index: 2;
+        font-weight: bold;
+      }
+      .w-table th:first-child {
+        background: #e2e8f0;
+        z-index: 3;
+      }
+
+      .w-table tbody tr {
+        cursor: pointer;
+        transition: 0.1s;
+      }
+      .w-table tbody tr:hover {
+        background-color: #f0f9ff;
+      }
+      .w-table tr.total-row {
+        background: #f8fafc;
+        font-weight: bold;
+        border-top: 2px solid #94a3b8;
+      }
+      .w-table tr.total-row td:first-child {
+        background: #f1f5f9;
+      }
+
+      /* History Navigation Elements */
+      .clickable-block {
+        background: #f8fafc;
+        border: 1px solid #cbd5e1;
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 12px;
+        cursor: pointer;
+      }
+      .clickable-block:hover {
+        border-color: #3b82f6;
+        background: #f0f9ff;
+      }
+      #calendarContainer {
+        margin-bottom: 15px;
+      }
+      .calendar-select {
+        width: 100%;
+        padding: 12px;
+        border-radius: 8px;
+        border: 1px solid #3b82f6;
+        font-size: 15px;
+        font-weight: bold;
+        background-color: #f0f9ff;
+        color: #1e3a8a;
+        text-align: center;
+      }
+      .back-nav-btn {
+        background: #64748b;
+        color: white;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 6px;
+        font-size: 13px;
+        font-weight: bold;
+        cursor: pointer;
+        margin-bottom: 15px;
+      }
+
+      .minus-text {
+        color: #ef4444;
+      }
+      .plus-text {
+        color: #10b981;
+      }
+      .blue-text {
+        color: #2563eb;
+      }
+
+      /* ==========================================================================
+           📱 MEDIA QUERIES FOR MOBILE DEVICES (Screens smaller than 600px)
+           ========================================================================== */
+      @media screen and (max-width: 600px) {
+        .app-container {
+          padding: 10px;
+        }
+        h2 {
+          font-size: 20px;
+          text-align: center;
+        }
+        .section-title {
+          font-size: 15px;
+          padding-left: 5px;
+        }
+
+        .grid-2 {
+          gap: 10px;
+          margin-bottom: 10px;
+        }
+        .input-group label {
+          font-size: 12px;
+          margin-bottom: 4px;
+        }
+        .input-group input {
+          padding: 10px;
+          font-size: 14px;
+        }
+
+        /* Mobile Table Font Scaler */
+        .w-table {
+          font-size: 11px;
+          min-width: 580px; /* ဖုန်းအသေးစားများအတွက် ဇယားကို ချုံ့ပေးခြင်း */
+        }
+        .w-table th,
+        .w-table td {
+          padding: 8px 4px;
+        }
+
+        .session-result {
+          padding: 10px;
+        }
+        .res-row {
+          font-size: 13px;
+        }
+        .res-row.input-origin {
+          font-size: 12px;
+          padding: 6px;
+        }
+        .final-amount {
+          font-size: 20px;
+        }
+      }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-</head>
-<body>
+  </head>
+  <body>
+    <div class="app-container">
+      <div class="tabs">
+        <button class="tab-btn active" onclick="switchTab('calc-tab')">
+          📊 တွက်ချက်မည်
+        </button>
+        <button
+          class="tab-btn"
+          onclick="
+            switchTab('history-tab');
+            changeFilter('week');
+          "
+        >
+          📜 စာရင်းဟောင်းများ
+        </button>
+      </div>
 
-<div class="app-container">
-    <div class="tabs">
-        <button class="tab-btn active" onclick="switchTab('calc-tab')">📊 တွက်ချက်မည်</button>
-        <button class="tab-btn" onclick="switchTab('history-tab'); changeFilter('week');">📜 စာရင်းဟောင်းများ</button>
-    </div>
-
-    <div id="calc-tab" class="tab-content active">
+      <div id="calc-tab" class="tab-content active">
         <h2>2D တွက်ချက်ရေးစနစ်</h2>
         <div class="settings-box">
-            <p class="set-title">⚙️ ချိန်ညှိချက်များ</p>
-            <div class="grid-2">
-                <div class="input-group"><label>ကော်မရှင် (%)</label><input type="number" id="cfgComm" value="18" step="0.1"></div>
-                <div class="input-group"><label>မိမိအမြတ် (%)</label><input type="number" id="cfgMyProfit" value="2.5" step="0.1"></div>
+          <p class="set-title">⚙️ ချိန်ညှိချက်များ</p>
+          <div class="grid-2">
+            <div class="input-group">
+              <label>ကော်မရှင် (%)</label
+              ><input type="number" id="cfgComm" value="18" step="0.1" />
             </div>
+            <div class="input-group">
+              <label>မိမိအမြတ် (%)</label
+              ><input type="number" id="cfgMyProfit" value="2.5" step="0.1" />
+            </div>
+          </div>
         </div>
 
         <div class="section-title">☀️ မနက်ပိုင်း</div>
         <div class="grid-2">
-            <div class="input-group"><label>ရောင်းရငွေ (T)</label><input type="number" id="amSales" placeholder="0" inputmode="numeric"></div>
-            <div class="input-group"><label>လျော်ရငွေ (P)</label><input type="number" id="amPayout" placeholder="0" inputmode="numeric"></div>
+          <div class="input-group">
+            <label>ရောင်းရငွေ (T)</label
+            ><input
+              type="number"
+              id="amSales"
+              placeholder="0"
+              inputmode="numeric"
+            />
+          </div>
+          <div class="input-group">
+            <label>လျော်ရငွေ (P)</label
+            ><input
+              type="number"
+              id="amPayout"
+              placeholder="0"
+              inputmode="numeric"
+            />
+          </div>
         </div>
 
         <div class="section-title">🌙 ညနေပိုင်း</div>
         <div class="grid-2">
-            <div class="input-group"><label>ရောင်းရငွေ (T)</label><input type="number" id="pmSales" placeholder="0" inputmode="numeric"></div>
-            <div class="input-group"><label>လျော်ရငွေ (P)</label><input type="number" id="pmPayout" placeholder="0" inputmode="numeric"></div>
+          <div class="input-group">
+            <label>ရောင်းရငွေ (T)</label
+            ><input
+              type="number"
+              id="pmSales"
+              placeholder="0"
+              inputmode="numeric"
+            />
+          </div>
+          <div class="input-group">
+            <label>လျော်ရငွေ (P)</label
+            ><input
+              type="number"
+              id="pmPayout"
+              placeholder="0"
+              inputmode="numeric"
+            />
+          </div>
         </div>
 
-        <button class="btn-main" onclick="handleCalculateAndSave()">တွက်ချက်ပြီး ဒေတာသိမ်းမည်</button>
+        <button class="btn-main" onclick="handleCalculateAndSave()">
+          တွက်ချက်ပြီး ဒေတာသိမ်းမည်
+        </button>
 
         <div class="result-board" id="resultBoard">
-            <div class="session-result">
-                <h4 style="color:#2563eb; margin-bottom:8px;">☀️ မနက်ပိုင်း ရလဒ်</h4>
-                <div class="res-row input-origin">
-                    <span>📥 ရောင်းရငွေ (T): <strong id="rAmOriginSales">0</strong></span>
-                    <span>💸 လျော်ရငွေ (P): <strong id="rAmOriginPayout">0</strong></span>
-                </div>
-                <div class="res-row"><span>ကော်မရှင်နုတ်ပြီး အရောင်း:</span><span id="rAmCommSales">0 ကျပ်</span></div>
-                <div class="res-row"><span>အမှန်လျော်ရငွေ (x80):</span><span id="rAmActualPayout" class="minus-text">0 ကျပ်</span></div>
-                <div class="res-row bold"><span>Total Profit (ဒိုင်အမြတ်):</span><span id="rAmTotalProfit" class="blue-text">0 ကျပ်</span></div>
-                <div class="res-row"><span>မိမိအမြတ်ငွေ:</span><span id="rAmMyProfit" class="plus-text">0 ကျပ်</span></div>
+          <div class="session-result">
+            <h4 style="color: #2563eb; margin-bottom: 8px">
+              ☀️ မနက်ပိုင်း ရလဒ်
+            </h4>
+            <div class="res-row input-origin">
+              <span
+                >📥 ရောင်းရငွေ (T): <strong id="rAmOriginSales">0</strong></span
+              >
+              <span
+                >💸 လျော်ရငွေ (P): <strong id="rAmOriginPayout">0</strong></span
+              >
             </div>
+            <div class="res-row">
+              <span>ကော်မရှင်နုတ်ပြီး အရောင်း:</span
+              ><span id="rAmCommSales">0 ကျပ်</span>
+            </div>
+            <div class="res-row">
+              <span>အမှန်လျော်ရငွေ (x80):</span
+              ><span id="rAmActualPayout" class="minus-text">0 ကျပ်</span>
+            </div>
+            <div class="res-row bold">
+              <span>Total Profit (ဒိုင်အမြတ်):</span
+              ><span id="rAmTotalProfit" class="blue-text">0 ကျပ်</span>
+            </div>
+            <div class="res-row">
+              <span>မိမိအမြတ်ငွေ:</span
+              ><span id="rAmMyProfit" class="plus-text">0 ကျပ်</span>
+            </div>
+          </div>
 
-            <div class="session-result">
-                <h4 style="color:#7c3aed; margin-bottom:8px;">🌙 ညနေပိုင်း ရလဒ်</h4>
-                <div class="res-row " input-origin">
-                    <span>📥 ရောင်းရငွေ (T): <strong id="rPmOriginSales">0</strong></span>
-                    <span>💸 လျော်ရငွေ (P): <strong id="rPmOriginPayout">0</strong></span>
-                </div>
-                <div class="res-row"><span>ကော်မရှင်နုတ်ပြီး အရောင်း:</span><span id="rPmCommSales">0 ကျပ်</span></div>
-                <div class="res-row"><span>အမှန်လျော်ရငွေ (x80):</span><span id="rPmActualPayout" class="minus-text">0 ကျပ်</span></div>
-                <div class="res-row bold"><span>Total Profit (ဒိုင်အမြတ်):</span><span id="rPmTotalProfit" class="blue-text">0 ကျပ်</span></div>
-                <div class="res-row"><span>မိမိအမြတ်ငွေ:</span><span id="rPmMyProfit" class="plus-text">0 ကျပ်</span></div>
+          <div class="session-result">
+            <h4 style="color: #7c3aed; margin-bottom: 8px">
+              🌙 ညနေပိုင်း ရလဒ်
+            </h4>
+            <div class="res-row input-origin">
+              <span
+                >📥 ရောင်းရငွေ (T): <strong id="rPmOriginSales">0</strong></span
+              >
+              <span
+                >💸 လျော်ရငွေ (P): <strong id="rPmOriginPayout">0</strong></span
+              >
             </div>
+            <div class="res-row">
+              <span>ကော်မရှင်နုတ်ပြီး အရောင်း:</span
+              ><span id="rPmCommSales">0 ကျပ်</span>
+            </div>
+            <div class="res-row">
+              <span>အမှန်လျော်ရငွေ (x80):</span
+              ><span id="rPmActualPayout" class="minus-text">0 ကျပ်</span>
+            </div>
+            <div class="res-row bold">
+              <span>Total Profit (ဒိုင်အမြတ်):</span
+              ><span id="rPmTotalProfit" class="blue-text">0 ကျပ်</span>
+            </div>
+            <div class="res-row">
+              <span>မိမိအမြတ်ငွေ:</span
+              ><span id="rPmMyProfit" class="plus-text">0 ကျပ်</span>
+            </div>
+          </div>
 
-            <div class="summary-box day-profit-box">
-                <h3 style="color: #1e40af;">📊 တစ်နေ့တာ စုစုပေါင်း ဒိုင်အမြတ်ငွေ (Total Profit)</h3>
-                <div class="final-amount" id="rFinalDayProfit">0 ကျပ်</div>
-            </div>
-            <div class="summary-box day-myprofit-box">
-                <h3 style="color: #065f46;">💰 တစ်နေ့တာ စုစုပေါင်း မိမိအမြတ်ငွေ</h3>
-                <div class="final-amount" id="rFinalMyProfit">0 ကျပ်</div>
-            </div>
+          <div class="summary-box day-profit-box">
+            <h3 style="color: #1e40af">
+              📊 တစ်နေ့တာ စုစုပေါင်း ဒိုင်အမြတ်ငွေ (Total Profit)
+            </h3>
+            <div class="final-amount" id="rFinalDayProfit">0 ကျပ်</div>
+          </div>
+          <div class="summary-box day-myprofit-box">
+            <h3 style="color: #065f46">💰 တစ်နေ့တာ စုစုပေါင်း မိမိအမြတ်ငွေ</h3>
+            <div class="final-amount" id="rFinalMyProfit">0 ကျပ်</div>
+          </div>
 
-            <div class="block-card">
-                <div class="block-header" id="calcBlockTitle">📅 လက်ရှိပတ် Weekly Block</div>
-                <div style="overflow-x: auto;">
-                    <table class="w-table">
-                        <thead>
-                            <tr>
-                                <th>ရက်စွဲ (နေ့)</th>
-                                <th>မနက်(ဒိုင်)</th>
-                                <th>မနက်(မိမိ)</th>
-                                <th>ညနေ(ဒိုင်)</th>
-                                <th>ညနေ(မိမိ)</th>
-                                <th>စုစုပေါင်း(ဒိုင်)</th>
-                                <th>စုစုပေါင်း(မိမိ)</th>
-                            </tr>
-                        </thead>
-                        <tbody id="calcBlockTableBody"></tbody>
-                    </table>
-                </div>
+          <div class="block-card">
+            <div class="block-header" id="calcBlockTitle">
+              📅 လက်ရှိပတ် Weekly Block
             </div>
+            <div class="table-responsive-wrapper">
+              <table class="w-table">
+                <thead>
+                  <tr>
+                    <th>ရက်စွဲ (နေ့)</th>
+                    <th>မနက်(ဒိုင်)</th>
+                    <th>မနက်(မိမိ)</th>
+                    <th>ညနေ(ဒိုင်)</th>
+                    <th>ညနေ(မိမိ)</th>
+                    <th>စုစုပေါင်း(ဒိုင်)</th>
+                    <th>စုစုပေါင်း(မိမိ)</th>
+                  </tr>
+                </thead>
+                <tbody id="calcBlockTableBody"></tbody>
+              </table>
+            </div>
+          </div>
         </div>
-    </div>
+      </div>
 
-    <div id="history-tab" class="tab-content">
+      <div id="history-tab" class="tab-content">
         <h2>📅 ကာလအလိုက် စာရင်းချုပ်</h2>
         <div id="calendarContainer">
-            <select id="yearSelector" class="calendar-select" onchange="handleYearChange()"></select>
+          <select
+            id="yearSelector"
+            class="calendar-select"
+            onchange="handleYearChange()"
+          ></select>
         </div>
         <div class="filter-box" id="historyFilterBox">
-            <button id="btnFilterWeek" class="active" onclick="toggleFilterBtn(this); changeFilter('week')">ဒီတစ်ပတ်စာ Block</button>
-            <button id="btnFilterMonth" onclick="toggleFilterBtn(this); changeFilter('month')">ဒီလစာ Blocks</button>
-            <button id="btnFilterAll" onclick="toggleFilterBtn(this); changeFilter('all')">အားလုံး (နှစ်ချုပ်ပြက္ခဒိန်)</button>
+          <button
+            id="btnFilterWeek"
+            class="active"
+            onclick="
+              toggleFilterBtn(this);
+              changeFilter('week');
+            "
+          >
+            ဒီတစ်ပတ်စာ Block
+          </button>
+          <button
+            id="btnFilterMonth"
+            onclick="
+              toggleFilterBtn(this);
+              changeFilter('month');
+            "
+          >
+            ဒီလစာ Blocks
+          </button>
+          <button
+            id="btnFilterAll"
+            onclick="
+              toggleFilterBtn(this);
+              changeFilter('all');
+            "
+          >
+            အားလုံး (နှစ်ချုပ်ပြက္ခဒိန်)
+          </button>
         </div>
         <div id="historyContainer"></div>
         <div id="singleDayDetailBoard" class="detail-container"></div>
+      </div>
     </div>
-</div>
 
-<script src="js/supabase-config.js"></script>
-<script src="js/db-service.js"></script>
-<script src="js/app.js"></script>
-</body>
+    <script src="js/supabase-config.js"></script>
+    <script src="js/db-service.js"></script>
+    <script src="js/app.js"></script>
+  </body>
 </html>

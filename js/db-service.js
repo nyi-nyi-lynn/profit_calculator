@@ -6,11 +6,10 @@ async function saveDailyRecord(recordData) {
   return error ? null : data;
 }
 
-// ဒေတာများကို မှန်ကန်စွာ ယူဆောင်ရန်
 async function getAllRecordsFromDB() {
   const { data, error } = await supabaseClient
     .from("daily_records")
     .select("*")
-    .order("record_date", { ascending: true }); // ⚠️ Monday To Friday စဉ်ရန် true ထားပါသည်
+    .order("record_date", { ascending: true }); // တနင်္လာမှ သောကြာ အစဉ်လိုက်ရရန်
   return error ? [] : data;
 }
