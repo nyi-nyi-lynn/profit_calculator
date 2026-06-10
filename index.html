@@ -1,0 +1,247 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>2D Pro - စာရင်းထိန်းစနစ်</title>
+    <link rel="stylesheet" href="css/styles.css" />
+    <style>
+      /* မူလဗားရှင်းမှ ရလဒ်ပြသဘုတ် ဒီဇိုင်းကို ဖြည့်စွက်ခြင်း */
+      .result-board {
+        margin-top: 20px;
+        display: none;
+      }
+      .session-result {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 10px;
+        padding: 12px;
+        margin-bottom: 15px;
+      }
+      .res-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 6px;
+        font-size: 14px;
+        color: #4b5563;
+      }
+      .res-row.bold {
+        font-weight: bold;
+        color: #1e293b;
+        border-top: 1px dashed #cbd5e1;
+        padding-top: 4px;
+        margin-top: 4px;
+      }
+      .summary-box {
+        border-radius: 10px;
+        padding: 15px;
+        text-align: center;
+        margin-top: 12px;
+      }
+      .day-profit-box {
+        background: #eff6ff;
+        border: 2px solid #3b82f6;
+      }
+      .day-myprofit-box {
+        background: #ecfdf5;
+        border: 2px solid #10b981;
+      }
+      .summary-box h3 {
+        font-size: 14px;
+        margin-bottom: 5px;
+      }
+      .final-amount {
+        font-size: 24px;
+        font-weight: bold;
+      }
+      .minus-text {
+        color: #ef4444;
+      }
+      .plus-text {
+        color: #10b981;
+      }
+      .blue-text {
+        color: #2563eb;
+      }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  </head>
+  <body>
+    <div class="app-container">
+      <div class="tabs">
+        <button class="tab-btn active" onclick="switchTab('calc-tab')">
+          📊 တွက်ချက်မည်
+        </button>
+        <button
+          class="tab-btn"
+          onclick="
+            switchTab('history-tab');
+            loadHistory();
+          "
+        >
+          📜 စာရင်းဟောင်းများ
+        </button>
+      </div>
+
+      <div id="calc-tab" class="tab-content active">
+        <h2>2D တွက်ချက်ရေးစနစ်</h2>
+        <div class="settings-box">
+          <p class="set-title">⚙️ ချိန်ညှိချက်များ</p>
+          <div class="grid-2">
+            <div class="input-group">
+              <label>ကော်မရှင် (%)</label
+              ><input type="number" id="cfgComm" value="18" step="0.1" />
+            </div>
+            <div class="input-group">
+              <label>မိမိအမြတ် (%)</label
+              ><input type="number" id="cfgMyProfit" value="2.5" step="0.1" />
+            </div>
+          </div>
+        </div>
+
+        <div class="section-title">☀️ မနက်ပိုင်း</div>
+        <div class="grid-2">
+          <div class="input-group">
+            <label>ရောင်းရငွေ (T)</label
+            ><input
+              type="number"
+              id="amSales"
+              placeholder="0"
+              inputmode="numeric"
+            />
+          </div>
+          <div class="input-group">
+            <label>လျော်ရငွေ (P)</label
+            ><input
+              type="number"
+              id="amPayout"
+              placeholder="0"
+              inputmode="numeric"
+            />
+          </div>
+        </div>
+
+        <div class="section-title">🌙 ညနေပိုင်း</div>
+        <div class="grid-2">
+          <div class="input-group">
+            <label>ရောင်းရငွေ (T)</label
+            ><input
+              type="number"
+              id="pmSales"
+              placeholder="0"
+              inputmode="numeric"
+            />
+          </div>
+          <div class="input-group">
+            <label>လျော်ရငွေ (P)</label
+            ><input
+              type="number"
+              id="pmPayout"
+              placeholder="0"
+              inputmode="numeric"
+            />
+          </div>
+        </div>
+
+        <button class="btn-main" onclick="handleCalculateAndSave()">
+          တွက်ချက်ပြီး ဒေတာသိမ်းမည်
+        </button>
+
+        <div class="result-board" id="resultBoard">
+          <div class="session-result">
+            <h4 style="color: #2563eb; margin-bottom: 8px">
+              ☀️ မနက်ပိုင်း ရလဒ်
+            </h4>
+            <div class="res-row">
+              <span>ကော်မရှင်နုတ်ပြီး အရောင်း:</span
+              ><span id="rAmCommSales">0 ကျပ်</span>
+            </div>
+            <div class="res-row">
+              <span>အမှန်လျော်ရငွေ (x80):</span
+              ><span id="rAmActualPayout" class="minus-text">0 ကျပ်</span>
+            </div>
+            <div class="res-row bold">
+              <span>Total Profit (ဒိုင်အမြတ်):</span
+              ><span id="rAmTotalProfit" class="blue-text">0 ကျပ်</span>
+            </div>
+            <div class="res-row">
+              <span>မိမိအမြတ်ငွေ:</span
+              ><span id="rAmMyProfit" class="plus-text">0 ကျပ်</span>
+            </div>
+          </div>
+
+          <div class="session-result">
+            <h4 style="color: #7c3aed; margin-bottom: 8px">
+              🌙 ညနေပိုင်း ရလဒ်
+            </h4>
+            <div class="res-row">
+              <span>ကော်မရှင်နုတ်ပြီး အရောင်း:</span
+              ><span id="rPmCommSales">0 ကျပ်</span>
+            </div>
+            <div class="res-row">
+              <span>အမှန်လျော်ရငွေ (x80):</span
+              ><span id="rPmActualPayout" class="minus-text">0 ကျပ်</span>
+            </div>
+            <div class="res-row bold">
+              <span>Total Profit (ဒိုင်အမြတ်):</span
+              ><span id="rPmTotalProfit" class="blue-text">0 ကျပ်</span>
+            </div>
+            <div class="res-row">
+              <span>မိမိအမြတ်ငွေ:</span
+              ><span id="rPmMyProfit" class="plus-text">0 ကျပ်</span>
+            </div>
+          </div>
+
+          <div class="summary-box day-profit-box">
+            <h3 style="color: #1e40af">
+              📊 တစ်နေ့တာ စုစုပေါင်း ဒိုင်အမြတ်ငွေ (Total Profit)
+            </h3>
+            <div class="final-amount" id="rFinalDayProfit">0 ကျပ်</div>
+          </div>
+
+          <div class="summary-box day-myprofit-box">
+            <h3 style="color: #065f46">💰 တစ်နေ့တာ စုစုပေါင်း မိမိအမြတ်ငွေ</h3>
+            <div class="final-amount" id="rFinalMyProfit">0 ကျပ်</div>
+          </div>
+        </div>
+      </div>
+
+      <div id="history-tab" class="tab-content">
+        <h2>📅 ကာလအလိုက် အစီရင်ခံစာ</h2>
+        <div class="filter-box">
+          <button onclick="loadHistory('week')">ဒီတစ်ပတ်စာ</button>
+          <button onclick="loadHistory('month')">ဒီလစာ</button>
+          <button onclick="loadHistory('all')">အားလုံး</button>
+        </div>
+
+        <div class="report-summary">
+          <div>
+            <strong>စုစုပေါင်း ဒိုင်အမြတ်:</strong>
+            <span id="sumDayProfit">0</span> ကျပ်
+          </div>
+          <div>
+            <strong>စုစုပေါင်း မိမိအမြတ်:</strong>
+            <span id="sumMyProfit">0</span> ကျပ်
+          </div>
+        </div>
+
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th>ရက်စွဲ</th>
+                <th>ဒိုင်အမြတ်</th>
+                <th>မိမိအမြတ်</th>
+              </tr>
+            </thead>
+            <tbody id="historyTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <script src="js/supabase-config.js"></script>
+    <script src="js/db-service.js"></script>
+    <script src="js/app.js"></script>
+  </body>
+</html>
