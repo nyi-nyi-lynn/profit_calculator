@@ -315,103 +315,143 @@ function showSingleDayDetail(dateStr) {
   board.scrollIntoView({ behavior: "smooth" });
 }
 
-async function handleCalculateAndSave() {
-  const amSalesRaw = document.getElementById("amSales").value.trim();
-  const amPayoutRaw = document.getElementById("amPayout").value.trim();
-  const pmSalesRaw = document.getElementById("pmSales").value.trim();
-  const pmPayoutRaw = document.getElementById("pmPayout").value.trim();
+// 🆕 တွက်ချက်မှုဆိုင်ရာ ယာယီ Data Object ကို သိမ်းဆည်းရန် Global Variable တစ်ခု ထားရှိခြင်း
+let temporaryCalculatedRecord = null;
 
-  if (!amSalesRaw && !amPayoutRaw && !pmSalesRaw && !pmPayoutRaw) {
-    alert("⚠️ ဒေတာ ဖြည့်သွင်းပါ။");
-    return;
-  }
+// ==========================================================================
+// 🆕 DOMContentLoaded တွင် Auto Today Calendar Select ပြုလုပ်ခြင်း
+// ==========================================================================
+window.addEventListener('DOMContentLoaded', async () => {
+    // ယခင်ပါဝင်ပြီးသား Auth Check စနစ်
+    const { data: { session } } = await supabaseClient.auth.getSession();
+    if (session && session.user) {
+        showMainApp(session.user);
+    } else {
+        showAuthScreen();
+    }
 
-  const commPercent = parseFloat(document.getElementById("cfgComm").value) || 0;
-  const myProfitPercent =
-    parseFloat(document.getElementById("cfgMyProfit").value) || 0;
-  const amSales = parseFloat(amSalesRaw) || 0;
-  const amPayout = parseFloat(amPayoutRaw) || 0;
-  const pmSales = parseFloat(pmSalesRaw) || 0;
-  const pmPayout = parseFloat(pmPayoutRaw) || 0;
+    // 🎯 ပြက္ခဒိန်တွင် ယနေ့ရက်စွဲအား Auto ရွေးချယ်ပေးထားခြင်း
+    const dateInput = document.getElementById('calcTargetDate');
+    if(dateInput) {
+        const today = new Date();
+        const yyyy = today.getFullYear();
+        const mm = String(today.getMonth() + 1).padStart(2, '0');
+        const dd = String(today.getDate()).padStart(2, '0');
+        dateInput.value = `${yyyy}-${mm}-${dd}`; // Formats: YYYY-MM-DD
+    }
+});
 
-  const amCommSales = amSales * (1 - commPercent / 100);
-  const amActualPayout = amPayout * 80;
-  const amTotalProfit = amCommSales - amActualPayout;
-  const amMyProfit = amTotalProfit * (myProfitPercent / 100);
+// ==========================================================================
+// 🆕 တွက်ချက်မှုနှင့် သိမ်းဆည်းမှု ပင်မ Core Logic (Version 2.4)
+// ==========================================================================
+async function handleCalculateAndDecision() {
+    const amSalesRaw = document.getElementById('amSales').value.trim();
+    const amPayoutRaw = document.getElementById('amPayout').value.trim();
+    const pmSalesRaw = document.getElementById('pmSales').value.trim();
+    const pmPayoutRaw = document.getElementById('pmPayout').value.trim();
 
-  const pmCommSales = pmSales * (1 - commPercent / 100);
-  const pmActualPayout = pmPayout * 80;
-  const pmTotalProfit = pmCommSales - pmActualPayout;
-  const pmMyProfit = pmTotalProfit * (myProfitPercent / 100);
+    if (!amSalesRaw && !amPayoutRaw && !pmSalesRaw && !pmPayoutRaw) { alert("⚠️ ဒေတာ ဖြည့်သွင်းပါ။"); return; }
 
-  const todayStr = new Date().toISOString().split("T")[0];
-  const recordData = {
-    record_date: todayStr,
-    comm_percent: commPercent,
-    my_profit_percent: myProfitPercent,
-    am_sales: amSales,
-    am_payout: amPayout,
-    pm_sales: pmSales,
-    pm_payout: pmPayout,
-    total_day_profit: Math.round(amTotalProfit + pmTotalProfit),
-    total_my_profit: Math.round(amMyProfit + pmMyProfit),
-  };
+    const commPercent = parseFloat(document.getElementById('cfgComm').value) || 0;
+    const myProfitPercent = parseFloat(document.getElementById('cfgMyProfit').value) || 0;
+    const amSales = parseFloat(amSalesRaw) || 0; const amPayout = parseFloat(amPayoutRaw) || 0;
+    const pmSales = parseFloat(pmSalesRaw) || 0; const pmPayout = parseFloat(pmPayoutRaw) || 0;
 
-  const result = await saveDailyRecord(recordData);
-  if (result !== null) {
-    alert("✅ ယနေ့စာရင်း သိမ်းဆည်းပြီးပါပြီ။");
+    const amCommSales = amSales * (1 - (commPercent / 100));
+    const amActualPayout = amPayout * 80; const amTotalProfit = amCommSales - amActualPayout;
+    const amMyProfit = amTotalProfit * (myProfitPercent / 100);
 
-    document.getElementById("rAmOriginSales").innerText =
-      amSales.toLocaleString();
-    document.getElementById("rAmOriginPayout").innerText =
-      amPayout.toLocaleString();
-    document.getElementById("rPmOriginSales").innerText =
-      pmSales.toLocaleString();
-    document.getElementById("rPmOriginPayout").innerText =
-      pmPayout.toLocaleString();
-    document.getElementById("rAmCommSales").innerText =
-      Math.round(amCommSales).toLocaleString() + " ကျပ်";
-    document.getElementById("rAmActualPayout").innerText =
-      "-" + amActualPayout.toLocaleString() + " ကျပ်";
-    document.getElementById("rAmTotalProfit").innerText =
-      Math.round(amTotalProfit).toLocaleString() + " ကျပ်";
-    document.getElementById("rAmMyProfit").innerText =
-      Math.round(amMyProfit).toLocaleString() + " ကျပ်";
-    document.getElementById("rPmCommSales").innerText =
-      Math.round(pmCommSales).toLocaleString() + " ကျပ်";
-    document.getElementById("rPmActualPayout").innerText =
-      "-" + pmActualPayout.toLocaleString() + " ကျပ်";
-    document.getElementById("rPmTotalProfit").innerText =
-      Math.round(pmTotalProfit).toLocaleString() + " ကျပ်";
-    document.getElementById("rPmMyProfit").innerText =
-      Math.round(pmMyProfit).toLocaleString() + " ကျပ်";
+    const pmCommSales = pmSales * (1 - (commPercent / 100));
+    const pmActualPayout = pmPayout * 80; const pmTotalProfit = pmCommSales - pmActualPayout;
+    const pmMyProfit = pmTotalProfit * (myProfitPercent / 100);
 
-    const tProf = amTotalProfit + pmTotalProfit;
-    const tMy = amMyProfit + pmMyProfit;
-    document.getElementById("rFinalDayProfit").innerText =
-      Math.round(tProf).toLocaleString() + " ကျပ်";
-    document.getElementById("rFinalDayProfit").style.color =
-      tProf < 0 ? "#ef4444" : "#2563eb";
-    document.getElementById("rFinalMyProfit").innerText =
-      Math.round(tMy).toLocaleString() + " ကျပ်";
-    document.getElementById("rFinalMyProfit").style.color =
-      tMy < 0 ? "#ef4444" : "#10b981";
+    // 🎯 ပြက္ခဒိန်မှ အသုံးပြုသူ ရွေးချယ်ထားသော နှစ်သက်ရာ ရက်စွဲကို ရယူခြင်း
+    const chosenDateStr = document.getElementById('calcTargetDate').value;
 
-    const cMonthText = getMonthNameMM(new Date().getMonth() + 1);
-    const cWeekText = getMyanmarWeekName(todayStr);
-    document.getElementById("calcBlockTitle").innerText =
-      `📋 ${new Date().getFullYear()} ခုနှစ် ${cMonthText} (${cWeekText}) စာရင်းချုပ် (တနင်္လာ - သောကြာ)`;
+    // ယာယီ သိမ်းဆည်းမည့် Object တည်ဆောက်ခြင်း
+    temporaryCalculatedRecord = {
+        record_date: chosenDateStr, comm_percent: commPercent, my_profit_percent: myProfitPercent,
+        am_sales: amSales, am_payout: amPayout, pm_sales: pmSales, pm_payout: pmPayout,
+        total_day_profit: Math.round(amTotalProfit + pmTotalProfit), total_my_profit: Math.round(amMyProfit + pmMyProfit)
+    };
 
+    // UI ပေါ်တွင် တွက်ချက်မှု ရလဒ်များအား အရင်ဆုံး ထုတ်ပြခြင်း
+    renderResultsToUI(amSales, amPayout, pmSales, pmPayout, amCommSales, amActualPayout, amTotalProfit, amMyProfit, pmCommSales, pmActualPayout, pmTotalProfit, pmMyProfit, chosenDateStr);
+
+    // Checkbox အခြေအနေကို စစ်ဆေးခြင်း
+    const isAutoSaveChecked = document.getElementById('chkAutoSave').checked;
+
+    if (isAutoSaveChecked) {
+        // အမှန်ခြစ် ထားပါက - ဒေတာဘေ့စ်ထဲ တခါတည်း တိုက်ရိုက်သိမ်းမည်
+        document.getElementById('btnManualSave').style.display = 'none';
+        await executeSaveProcess(temporaryCalculatedRecord);
+    } else {
+        // အမှန်ခြစ် မထားပါက - ရလဒ်ပဲပြပြီး၊ အောက်ဆုံးတွင် "သိမ်းဆည်းမည် Button" ကို ဖော်ပေးမည်
+        document.getElementById('btnManualSave').style.display = 'block';
+        alert("📊 တွက်ချက်မှု ရလဒ်ကိုသာ ပြသထားပါသည်။ ဒေတာဘေ့စ်တွင် သိမ်းဆည်းလိုပါက အောက်ဆုံးရှိ ခလုတ်ကို နှိပ်နိုင်ပါတယ်ဗျာ။");
+    }
+}
+
+// 🆕 ရလဒ်များကို UI ပေါ်သို့ Render လုပ်ပေးသည့် သီးသန့် Function
+function renderResultsToUI(amSales, amPayout, pmSales, pmPayout, amCommSales, amActualPayout, amTotalProfit, amMyProfit, pmCommSales, pmActualPayout, pmTotalProfit, pmMyProfit, chosenDateStr) {
+    document.getElementById('rAmOriginSales').innerText = amSales.toLocaleString();
+    document.getElementById('rAmOriginPayout').innerText = amPayout.toLocaleString();
+    document.getElementById('rPmOriginSales').innerText = pmSales.toLocaleString();
+    document.getElementById('rPmOriginPayout').innerText = pmPayout.toLocaleString();
+    document.getElementById('rAmCommSales').innerText = Math.round(amCommSales).toLocaleString() + " ကျပ်";
+    document.getElementById('rAmActualPayout').innerText = "-" + amActualPayout.toLocaleString() + " ကျပ်";
+    document.getElementById('rAmTotalProfit').innerText = Math.round(amTotalProfit).toLocaleString() + " ကျပ်";
+    document.getElementById('rAmMyProfit').innerText = Math.round(amMyProfit).toLocaleString() + " ကျပ်";
+    document.getElementById('rPmCommSales').innerText = Math.round(pmCommSales).toLocaleString() + " ကျပ်";
+    document.getElementById('rPmActualPayout').innerText = "-" + pmActualPayout.toLocaleString() + " ကျပ်";
+    document.getElementById('rPmTotalProfit').innerText = Math.round(pmTotalProfit).toLocaleString() + " ကျပ်";
+    document.getElementById('rPmMyProfit').innerText = Math.round(pmMyProfit).toLocaleString() + " ကျပ်";
+
+    const tProf = amTotalProfit + pmTotalProfit; const tMy = amMyProfit + pmMyProfit;
+    document.getElementById('rFinalDayProfit').innerText = Math.round(tProf).toLocaleString() + " ကျပ်";
+    document.getElementById('rFinalDayProfit').style.color = tProf < 0 ? "#ef4444" : "#2563eb";
+    document.getElementById('rFinalMyProfit').innerText = Math.round(tMy).toLocaleString() + " ကျပ်";
+    document.getElementById('rFinalMyProfit').style.color = tMy < 0 ? "#ef4444" : "#10b981";
+
+    const dateObj = new Date(chosenDateStr);
+    const cMonthText = getMonthNameMM(dateObj.getMonth() + 1);
+    const cWeekText = getMyanmarWeekName(chosenDateStr);
+    document.getElementById('calcBlockTitle').innerText = `📋 ${dateObj.getFullYear()} ခုနှစ် ${cMonthText} (${cWeekText}) စာရင်းချုပ် (တနင်္လာ - သောကြာ)`;
+
+    document.getElementById('resultBoard').style.display = 'block';
+    refreshWeeklyTableBlock(chosenDateStr);
+}
+
+// 🆕 ရလဒ်အောက်က Button နှိပ်မှ Manual အနေဖြင့် သိမ်းဆည်းပေးမည့် Function
+async function handleManualSaveAction() {
+    if(!temporaryCalculatedRecord) return;
+    await executeSaveProcess(temporaryCalculatedRecord);
+    document.getElementById('btnManualSave').style.display = 'none'; // သိမ်းပြီးပါက ခလုတ်အား ပြန်ဖျောက်ခြင်း
+}
+
+// 🆕 ပင်မ Database သိမ်းဆည်းခြင်း လုပ်ငန်းစဉ်
+async function executeSaveProcess(recordObj) {
+    const result = await saveDailyRecord(recordObj);
+    if (result !== null) {
+        alert("✅ စာရင်းအား ဒေတာဘေ့စ်ထဲသို့ အောင်မြင်စွာ သိမ်းဆည်းပြီးပါပြီဗျာ။");
+        await refreshWeeklyTableBlock(recordObj.record_date);
+    } else {
+        alert("❌ ဒေတာသိမ်းဆည်းမှု မအောင်မြင်ပါ။");
+    }
+}
+
+// 🆕 ရွေးချယ်ထားသော ရက်စွဲရှိသည့် ရက်သတ္တပတ် ဇယားကွက်ကို အလိုအလျောက် Update လုပ်ပေးရန်
+async function refreshWeeklyTableBlock(targetDateStr) {
     dbCachedRecords = await getAllRecordsFromDB();
-    const currentWNum = getWeekNumber(todayStr);
-    const currentWeekRecords = dbCachedRecords.filter(
-      (r) => getWeekNumber(r.record_date) === currentWNum,
+    const currentWNum = getWeekNumber(targetDateStr);
+    const targetYear = new Date(targetDateStr).getFullYear();
+    
+    const currentWeekRecords = dbCachedRecords.filter(r => 
+        new Date(r.record_date).getFullYear() === targetYear && 
+        getWeekNumber(r.record_date) === currentWNum
     );
-
-    document.getElementById("calcBlockTableBody").innerHTML =
-      generateBlockRows(currentWeekRecords);
-    document.getElementById("resultBoard").style.display = "block";
-  }
+    
+    document.getElementById('calcBlockTableBody').innerHTML = generateBlockRows(currentWeekRecords);
 }
 
 async function renderHistoryVisual() {
