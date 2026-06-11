@@ -3,6 +3,87 @@ let selectedYear = 2026;
 let navigationState = { level: "root", month: null, weekNum: null };
 let dbCachedRecords = [];
 
+// ==========================================================================
+// 🆕 AUTHENTICATION CORE LOGIC (VERSION 2.3)
+// ==========================================================================
+
+// App စတင်ပွင့်လာချိန်တွင် အကောင့်ဝင်ထားခြင်း ရှိ/မရှိ အလိုအလျောက် စစ်ဆေးခြင်း
+window.addEventListener("DOMContentLoaded", async () => {
+  const {
+    data: { session },
+  } = await supabaseClient.auth.getSession();
+  if (session && session.user) {
+    showMainApp(session.user);
+  } else {
+    showAuthScreen();
+  }
+});
+
+function showMainApp(user) {
+  document.getElementById("authSection").style.display = "none";
+  document.getElementById("mainAppSection").style.display = "block";
+  document.getElementById("userDisplayEmail").innerText = user.email;
+  renderHistoryVisual(); // လက်ရှိ User ၏ စာရင်းဟောင်းများကို ဒေတာဘေ့စ်မှ ဆွဲတင်ရန်
+}
+
+function showAuthScreen() {
+  document.getElementById("authSection").style.display = "block";
+  document.getElementById("mainAppSection").style.display = "none";
+}
+
+// အကောင့်သစ်ဖွင့်ခြင်း (Sign Up)
+async function handleSignUp() {
+  const email = document.getElementById("authEmail").value.trim();
+  const password = document.getElementById("authPassword").value.trim();
+  if (!email || !password) {
+    alert("⚠️ Email နှင့် Password ဖြည့်ပါ။");
+    return;
+  }
+
+  const { data, error } = await supabaseClient.auth.signUp({ email, password });
+  if (error) {
+    alert("❌ အကောင့်ဖွင့်ခြင်း မအောင်မြင်ပါ- " + error.message);
+  } else {
+    alert(
+      "✅ အကောင့်ဖွင့်ခြင်း အောင်မြင်ပါသည်။ ကျေးဇူးပြု၍ Login ပြန်ဝင်ပေးပါ။",
+    );
+  }
+}
+
+// အကောင့်ဝင်ခြင်း (Log In)
+async function handleLogin() {
+  const email = document.getElementById("authEmail").value.trim();
+  const password = document.getElementById("authPassword").value.trim();
+  if (!email || !password) {
+    alert("⚠️ Email နှင့် Password ဖြည့်ပါ။");
+    return;
+  }
+
+  const { data, error } = await supabaseClient.auth.signInWithPassword({
+    email,
+    password,
+  });
+  if (error) {
+    alert("❌ Login ဝင်ခြင်း မအောင်မြင်ပါ- " + error.message);
+  } else {
+    showMainApp(data.user);
+  }
+}
+
+// အကောင့်ထွက်ခြင်း (Log Out)
+async function handleLogout() {
+  const { error } = await supabaseClient.auth.signOut();
+  showAuthScreen();
+  // Input ကွက်များ ရှင်းလင်းခြင်း
+  document.getElementById("authEmail").value = "";
+  document.getElementById("authPassword").value = "";
+  document.getElementById("resultBoard").style.display = "none";
+}
+
+// ==========================================================================
+// BUSINESS LOGIC & COMPONENT RENDERING (V2.2 MOVED INSIDE)
+// ==========================================================================
+
 function getMyanmarWeekName(dateString) {
   const date = new Date(dateString).getDate();
   if (date <= 7) return "ပထမအပတ်";
@@ -101,56 +182,73 @@ function changeFilter(type) {
 }
 
 function generateBlockRows(records) {
-    let html = "";
-    let tAmProf = 0, tAmMy = 0, tPmProf = 0, tPmMy = 0, tDay = 0, tMy = 0;
-    
-    // ရက်စွဲများကို တနင်္လာမှ သောကြာ အစီအစဉ်အတိုင်း တိကျစွာစီခြင်း
-    const sorted = [...records].sort((a,b) => new Date(a.record_date) - new Date(b.record_date));
+  let html = "";
+  let tAmProf = 0,
+    tAmMy = 0,
+    tPmProf = 0,
+    tPmMy = 0,
+    tDay = 0,
+    tMy = 0;
+  const sorted = [...records].sort(
+    (a, b) => new Date(a.record_date) - new Date(b.record_date),
+  );
 
-    sorted.forEach(row => {
-        const dayName = getMyanmarDayName(row.record_date);
-        if(dayName === "စနေ" || dayName === "တနင်္ဂနွေ") return;
+  sorted.forEach((row) => {
+    const dayName = getMyanmarDayName(row.record_date);
+    if (dayName === "စနေ" || dayName === "တနင်္ဂနွေ") return;
 
-        const amSales = row.am_sales || 0; const amPayout = row.am_payout || 0;
-        const amProf = Math.round((amSales * (1 - (row.comm_percent / 100))) - (amPayout * 80));
-        const amMy = Math.round(amProf * (row.my_profit_percent / 100));
-        const pmSales = row.pm_sales || 0; const pmPayout = row.pm_payout || 0;
-        const pmProf = Math.round((pmSales * (1 - (row.comm_percent / 100))) - (pmPayout * 80));
-        const pmMy = Math.round(pmProf * (row.my_profit_percent / 100));
+    const amSales = row.am_sales || 0;
+    const amPayout = row.am_payout || 0;
+    const amProf = Math.round(
+      amSales * (1 - row.comm_percent / 100) - amPayout * 80,
+    );
+    const amMy = Math.round(amProf * (row.my_profit_percent / 100));
+    const pmSales = row.pm_sales || 0;
+    const pmPayout = row.pm_payout || 0;
+    const pmProf = Math.round(
+      pmSales * (1 - row.comm_percent / 100) - pmPayout * 80,
+    );
+    const pmMy = Math.round(pmProf * (row.my_profit_percent / 100));
 
-        const dTot = amProf + pmProf; const mTot = amMy + pmMy;
-        tAmProf += amProf; tAmMy += amMy; tPmProf += pmProf; tPmMy += pmMy; tDay += dTot; tMy += mTot;
+    const dTot = amProf + pmProf;
+    const mTot = amMy + pmMy;
+    tAmProf += amProf;
+    tAmMy += amMy;
+    tPmProf += pmProf;
+    tPmMy += pmMy;
+    tDay += dTot;
+    tMy += mTot;
 
-        // ရက်စွဲ Format အား MM-DD (ဥပမာ - 06/15) ပြုလုပ်ခြင်း
-        const mth = row.record_date.substring(5, 7);
-        const day = row.record_date.substring(8, 10);
-
-        html += `
-            <tr onclick="showSingleDayDetail('${row.record_date}')">
-                <td>${mth}/${day}<br>(${dayName})</td>
-                <td class="${amProf < 0 ? 'minus-text' : ''}">${amProf.toLocaleString()}</td>
-                <td class="${amMy < 0 ? 'minus-text' : ''}">${amMy.toLocaleString()}</td>
-                <td class="${pmProf < 0 ? 'minus-text' : ''}">${pmProf.toLocaleString()}</td>
-                <td class="${pmMy < 0 ? 'minus-text' : ''}">${pmMy.toLocaleString()}</td>
-                <td class="${dTot < 0 ? 'minus-text' : 'blue-text'}" style="font-weight:600;">${dTot.toLocaleString()}</td>
-                <td class="${mTot < 0 ? 'minus-text' : 'plus-text'}" style="font-weight:600;">${mTot.toLocaleString()}</td>
-            </tr>
-        `;
-    });
+    const mth = row.record_date.substring(5, 7);
+    const day = row.record_date.substring(8, 10);
 
     html += `
+            <tr onclick="showSingleDayDetail('${row.record_date}')">
+                <td>${mth}/${day}<br>(${dayName})</td>
+                <td class="${amProf < 0 ? "minus-text" : ""}">${amProf.toLocaleString()}</td>
+                <td class="${amMy < 0 ? "minus-text" : ""}">${amMy.toLocaleString()}</td>
+                <td class="${pmProf < 0 ? "minus-text" : ""}">${pmProf.toLocaleString()}</td>
+                <td class="${pmMy < 0 ? "minus-text" : ""}">${pmMy.toLocaleString()}</td>
+                <td class="${dTot < 0 ? "minus-text" : "blue-text"}" style="font-weight:600;">${dTot.toLocaleString()}</td>
+                <td class="${mTot < 0 ? "minus-text" : "plus-text"}" style="font-weight:600;">${mTot.toLocaleString()}</td>
+            </tr>
+        `;
+  });
+
+  html += `
         <tr class="total-row">
             <td>Total</td>
-            <td class="${tAmProf < 0 ? 'minus-text' : ''}">${tAmProf.toLocaleString()}</td>
-            <td class="${tAmMy < 0 ? 'minus-text' : ''}">${tAmMy.toLocaleString()}</td>
-            <td class="${tPmProf < 0 ? 'minus-text' : ''}">${tPmProf.toLocaleString()}</td>
-            <td class="${tPmMy < 0 ? 'minus-text' : ''}">${tPmMy.toLocaleString()}</td>
-            <td class="${tDay < 0 ? 'minus-text' : 'blue-text'}">${tDay.toLocaleString()}</td>
-            <td class="${tMy < 0 ? 'minus-text' : 'plus-text'}">${tMy.toLocaleString()}</td>
+            <td class="${tAmProf < 0 ? "minus-text" : ""}">${tAmProf.toLocaleString()}</td>
+            <td class="${tAmMy < 0 ? "minus-text" : ""}">${tAmMy.toLocaleString()}</td>
+            <td class="${tPmProf < 0 ? "minus-text" : ""}">${tPmProf.toLocaleString()}</td>
+            <td class="${tPmMy < 0 ? "minus-text" : ""}">${tPmMy.toLocaleString()}</td>
+            <td class="${tDay < 0 ? "minus-text" : "blue-text"}">${tDay.toLocaleString()}</td>
+            <td class="${tMy < 0 ? "minus-text" : "plus-text"}">${tMy.toLocaleString()}</td>
         </tr>
     `;
-    return html;
+  return html;
 }
+
 function showSingleDayDetail(dateStr) {
   const target = dbCachedRecords.find((r) => r.record_date === dateStr);
   if (!target) return;
@@ -271,7 +369,6 @@ async function handleCalculateAndSave() {
       pmSales.toLocaleString();
     document.getElementById("rPmOriginPayout").innerText =
       pmPayout.toLocaleString();
-
     document.getElementById("rAmCommSales").innerText =
       Math.round(amCommSales).toLocaleString() + " ကျပ်";
     document.getElementById("rAmActualPayout").innerText =
@@ -280,7 +377,6 @@ async function handleCalculateAndSave() {
       Math.round(amTotalProfit).toLocaleString() + " ကျပ်";
     document.getElementById("rAmMyProfit").innerText =
       Math.round(amMyProfit).toLocaleString() + " ကျပ်";
-
     document.getElementById("rPmCommSales").innerText =
       Math.round(pmCommSales).toLocaleString() + " ကျပ်";
     document.getElementById("rPmActualPayout").innerText =
@@ -320,6 +416,7 @@ async function handleCalculateAndSave() {
 
 async function renderHistoryVisual() {
   const container = document.getElementById("historyContainer");
+  if (!container) return;
   container.innerHTML = "";
   document.getElementById("singleDayDetailBoard").style.display = "none";
 

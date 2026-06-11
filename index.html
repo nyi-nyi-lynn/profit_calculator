@@ -3,23 +3,88 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>2D Pro - Version 2.2 (Fully Responsive System)</title>
+    <title>2D Pro - Version 2.3 (Multi-User System)</title>
     <link rel="stylesheet" href="css/styles.css" />
     <style>
-      /* ==========================================================================
-           🌟 VERSION 2.2 RESPONSIVE & HYBRID CSS CORE
-           ========================================================================== */
-
-      /* Layout Base Container */
+      /* Base Container */
       .app-container {
         width: 100%;
-        max-width: 1000px; /* Laptop/Desktop တွင် သင့်တော်သော ပမာဏ */
+        max-width: 1000px;
         margin: 0 auto;
         padding: 15px;
         box-sizing: border-box;
       }
 
-      /* Tab Switcher Layout */
+      /* 🆕 AUTH SCREEN STYLES */
+      .auth-container {
+        max-width: 400px;
+        margin: 60px auto;
+        padding: 25px;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        background: #ffffff;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+        text-align: center;
+      }
+      .auth-input {
+        width: 100%;
+        padding: 12px;
+        margin-bottom: 12px;
+        border: 1px solid #cbd5e1;
+        border-radius: 8px;
+        font-size: 14px;
+        box-sizing: border-box;
+      }
+      .auth-btn {
+        width: 100%;
+        padding: 12px;
+        border-radius: 8px;
+        font-weight: bold;
+        font-size: 14px;
+        cursor: pointer;
+        border: none;
+        margin-bottom: 8px;
+      }
+      .btn-primary {
+        background: #2563eb;
+        color: white;
+      }
+      .btn-secondary {
+        background: #f1f5f9;
+        color: #475569;
+      }
+
+      /* 🆕 USER NAV PROFILE BAR */
+      .user-profile-bar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        padding: 10px 15px;
+        border-radius: 8px;
+        margin-bottom: 15px;
+        font-size: 13px;
+      }
+      .logout-btn {
+        background: #ef4444;
+        color: white;
+        border: none;
+        padding: 5px 10px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-weight: bold;
+      }
+
+      /* Main Elements Control */
+      #authSection {
+        display: block;
+      }
+      #mainAppSection {
+        display: none;
+      } /* Login ဝင်ပြီးမှ ပေါ်မည် */
+
+      /* Existing V2.2 CSS Engines */
       .tabs {
         display: flex;
         width: 100%;
@@ -35,16 +100,12 @@
         cursor: pointer;
         text-align: center;
       }
-
-      /* Input Grid Responders */
       .grid-2 {
         display: grid;
         grid-template-columns: repeat(2, 1fr);
         gap: 15px;
         margin-bottom: 15px;
       }
-
-      /* Result Cards & Detail Boxes */
       .result-board,
       .detail-container {
         margin-top: 20px;
@@ -79,7 +140,6 @@
         font-size: 13px;
         margin-bottom: 10px;
       }
-
       .summary-box {
         border-radius: 10px;
         padding: 15px;
@@ -98,8 +158,6 @@
         font-size: 24px;
         font-weight: bold;
       }
-
-      /* 📱 CRITICAL FIX: WEEKLY BLOCK TABLE RESPONSIVE ENGINE */
       .block-card {
         background: #ffffff;
         border: 2px solid #cbd5e1;
@@ -119,22 +177,19 @@
         border-radius: 6px;
         border: 1px solid #bfdbfe;
       }
-
-      /* Table Wrapper with Horizontal Scrolling */
       .table-responsive-wrapper {
         width: 100%;
         overflow-x: auto;
-        -webkit-overflow-scrolling: touch; /* iOS Smooth Scroll */
+        -webkit-overflow-scrolling: touch;
         border: 1px solid #e2e8f0;
         border-radius: 8px;
       }
-
       .w-table {
         width: 100%;
         border-collapse: collapse;
         font-size: 13px;
         text-align: center;
-        min-width: 650px; /* ⚠️ ဖုန်းတွင် အတင်းအကျပ်ညှပ်မသွားစေရန် အနိမ့်ဆုံးအကျယ် သတ်မှတ်ခြင်း */
+        min-width: 650px;
       }
       .w-table th,
       .w-table td {
@@ -146,8 +201,6 @@
         font-weight: 600;
         color: #334155;
       }
-
-      /* 💡 ပထမဆုံး Column (ရက်စွဲ) ကို ဖုန်းထဲ၌ Scroll ဆွဲသော်လည်း ပျောက်မသွားအောင် Fixed ထားပေးခြင်း */
       .w-table th:first-child,
       .w-table td:first-child {
         position: -webkit-sticky;
@@ -162,7 +215,6 @@
         background: #e2e8f0;
         z-index: 3;
       }
-
       .w-table tbody tr {
         cursor: pointer;
         transition: 0.1s;
@@ -178,8 +230,6 @@
       .w-table tr.total-row td:first-child {
         background: #f1f5f9;
       }
-
-      /* History Navigation Elements */
       .clickable-block {
         background: #f8fafc;
         border: 1px solid #cbd5e1;
@@ -217,7 +267,6 @@
         cursor: pointer;
         margin-bottom: 15px;
       }
-
       .minus-text {
         color: #ef4444;
       }
@@ -228,54 +277,27 @@
         color: #2563eb;
       }
 
-      /* ==========================================================================
-           📱 MEDIA QUERIES FOR MOBILE DEVICES (Screens smaller than 600px)
-           ========================================================================== */
       @media screen and (max-width: 600px) {
         .app-container {
           padding: 10px;
         }
         h2 {
-          font-size: 20px;
+          font-size: 18px;
           text-align: center;
         }
-        .section-title {
-          font-size: 15px;
-          padding-left: 5px;
-        }
-
         .grid-2 {
           gap: 10px;
-          margin-bottom: 10px;
         }
-        .input-group label {
-          font-size: 12px;
-          margin-bottom: 4px;
-        }
-        .input-group input {
-          padding: 10px;
-          font-size: 14px;
-        }
-
-        /* Mobile Table Font Scaler */
         .w-table {
           font-size: 11px;
-          min-width: 580px; /* ဖုန်းအသေးစားများအတွက် ဇယားကို ချုံ့ပေးခြင်း */
+          min-width: 580px;
         }
         .w-table th,
         .w-table td {
           padding: 8px 4px;
         }
-
         .session-result {
           padding: 10px;
-        }
-        .res-row {
-          font-size: 13px;
-        }
-        .res-row.input-origin {
-          font-size: 12px;
-          padding: 6px;
         }
         .final-amount {
           font-size: 20px;
@@ -286,222 +308,267 @@
   </head>
   <body>
     <div class="app-container">
-      <div class="tabs">
-        <button class="tab-btn active" onclick="switchTab('calc-tab')">
-          📊 တွက်ချက်မည်
+      <div id="authSection" class="auth-container">
+        <h2 style="color: #1e3a8a; margin-bottom: 5px">2D Pro System</h2>
+        <p style="font-size: 13px; color: #64748b; margin-bottom: 20px">
+          ကျေးဇူးပြု၍ အကောင့်ဝင်ပါ
+        </p>
+        <input
+          type="email"
+          id="authEmail"
+          class="auth-input"
+          placeholder="အီးမေးလ် (Email)"
+        />
+        <input
+          type="password"
+          id="authPassword"
+          class="auth-input"
+          placeholder="လျှို့ဝှက်နံပါတ် (Password)"
+        />
+        <button class="auth-btn btn-primary" onclick="handleLogin()">
+          🔑 ဝင်ရောက်မည်
         </button>
-        <button
-          class="tab-btn"
-          onclick="
-            switchTab('history-tab');
-            changeFilter('week');
-          "
-        >
-          📜 စာရင်းဟောင်းများ
+        <button class="auth-btn btn-secondary" onclick="handleSignUp()">
+          📝 အကောင့်သစ်ဖွင့်မည်
         </button>
       </div>
 
-      <div id="calc-tab" class="tab-content active">
-        <h2>2D တွက်ချက်ရေးစနစ်</h2>
-        <div class="settings-box">
-          <p class="set-title">⚙️ ချိန်ညှိချက်များ</p>
-          <div class="grid-2">
-            <div class="input-group">
-              <label>ကော်မရှင် (%)</label
-              ><input type="number" id="cfgComm" value="18" step="0.1" />
-            </div>
-            <div class="input-group">
-              <label>မိမိအမြတ် (%)</label
-              ><input type="number" id="cfgMyProfit" value="2.5" step="0.1" />
-            </div>
-          </div>
+      <div id="mainAppSection">
+        <div class="user-profile-bar">
+          <span
+            >👤 User:
+            <strong id="userDisplayEmail" style="color: #1e40af"
+              >...</strong
+            ></span
+          >
+          <button class="logout-btn" onclick="handleLogout()">
+            ထွက်မည် 🚪
+          </button>
         </div>
 
-        <div class="section-title">☀️ မနက်ပိုင်း</div>
-        <div class="grid-2">
-          <div class="input-group">
-            <label>ရောင်းရငွေ (T)</label
-            ><input
-              type="number"
-              id="amSales"
-              placeholder="0"
-              inputmode="numeric"
-            />
-          </div>
-          <div class="input-group">
-            <label>လျော်ရငွေ (P)</label
-            ><input
-              type="number"
-              id="amPayout"
-              placeholder="0"
-              inputmode="numeric"
-            />
-          </div>
-        </div>
-
-        <div class="section-title">🌙 ညနေပိုင်း</div>
-        <div class="grid-2">
-          <div class="input-group">
-            <label>ရောင်းရငွေ (T)</label
-            ><input
-              type="number"
-              id="pmSales"
-              placeholder="0"
-              inputmode="numeric"
-            />
-          </div>
-          <div class="input-group">
-            <label>လျော်ရငွေ (P)</label
-            ><input
-              type="number"
-              id="pmPayout"
-              placeholder="0"
-              inputmode="numeric"
-            />
-          </div>
-        </div>
-
-        <button class="btn-main" onclick="handleCalculateAndSave()">
-          တွက်ချက်ပြီး ဒေတာသိမ်းမည်
-        </button>
-
-        <div class="result-board" id="resultBoard">
-          <div class="session-result">
-            <h4 style="color: #2563eb; margin-bottom: 8px">
-              ☀️ မနက်ပိုင်း ရလဒ်
-            </h4>
-            <div class="res-row input-origin">
-              <span
-                >📥 ရောင်းရငွေ (T): <strong id="rAmOriginSales">0</strong></span
-              >
-              <span
-                >💸 လျော်ရငွေ (P): <strong id="rAmOriginPayout">0</strong></span
-              >
-            </div>
-            <div class="res-row">
-              <span>ကော်မရှင်နုတ်ပြီး အရောင်း:</span
-              ><span id="rAmCommSales">0 ကျပ်</span>
-            </div>
-            <div class="res-row">
-              <span>အမှန်လျော်ရငွေ (x80):</span
-              ><span id="rAmActualPayout" class="minus-text">0 ကျပ်</span>
-            </div>
-            <div class="res-row bold">
-              <span>Total Profit (ဒိုင်အမြတ်):</span
-              ><span id="rAmTotalProfit" class="blue-text">0 ကျပ်</span>
-            </div>
-            <div class="res-row">
-              <span>မိမိအမြတ်ငွေ:</span
-              ><span id="rAmMyProfit" class="plus-text">0 ကျပ်</span>
-            </div>
-          </div>
-
-          <div class="session-result">
-            <h4 style="color: #7c3aed; margin-bottom: 8px">
-              🌙 ညနေပိုင်း ရလဒ်
-            </h4>
-            <div class="res-row input-origin">
-              <span
-                >📥 ရောင်းရငွေ (T): <strong id="rPmOriginSales">0</strong></span
-              >
-              <span
-                >💸 လျော်ရငွေ (P): <strong id="rPmOriginPayout">0</strong></span
-              >
-            </div>
-            <div class="res-row">
-              <span>ကော်မရှင်နုတ်ပြီး အရောင်း:</span
-              ><span id="rPmCommSales">0 ကျပ်</span>
-            </div>
-            <div class="res-row">
-              <span>အမှန်လျော်ရငွေ (x80):</span
-              ><span id="rPmActualPayout" class="minus-text">0 ကျပ်</span>
-            </div>
-            <div class="res-row bold">
-              <span>Total Profit (ဒိုင်အမြတ်):</span
-              ><span id="rPmTotalProfit" class="blue-text">0 ကျပ်</span>
-            </div>
-            <div class="res-row">
-              <span>မိမိအမြတ်ငွေ:</span
-              ><span id="rPmMyProfit" class="plus-text">0 ကျပ်</span>
-            </div>
-          </div>
-
-          <div class="summary-box day-profit-box">
-            <h3 style="color: #1e40af">
-              📊 တစ်နေ့တာ စုစုပေါင်း ဒိုင်အမြတ်ငွေ (Total Profit)
-            </h3>
-            <div class="final-amount" id="rFinalDayProfit">0 ကျပ်</div>
-          </div>
-          <div class="summary-box day-myprofit-box">
-            <h3 style="color: #065f46">💰 တစ်နေ့တာ စုစုပေါင်း မိမိအမြတ်ငွေ</h3>
-            <div class="final-amount" id="rFinalMyProfit">0 ကျပ်</div>
-          </div>
-
-          <div class="block-card">
-            <div class="block-header" id="calcBlockTitle">
-              📅 လက်ရှိပတ် Weekly Block
-            </div>
-            <div class="table-responsive-wrapper">
-              <table class="w-table">
-                <thead>
-                  <tr>
-                    <th>ရက်စွဲ (နေ့)</th>
-                    <th>မနက်(ဒိုင်)</th>
-                    <th>မနက်(မိမိ)</th>
-                    <th>ညနေ(ဒိုင်)</th>
-                    <th>ညနေ(မိမိ)</th>
-                    <th>စုစုပေါင်း(ဒိုင်)</th>
-                    <th>စုစုပေါင်း(မိမိ)</th>
-                  </tr>
-                </thead>
-                <tbody id="calcBlockTableBody"></tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div id="history-tab" class="tab-content">
-        <h2>📅 ကာလအလိုက် စာရင်းချုပ်</h2>
-        <div id="calendarContainer">
-          <select
-            id="yearSelector"
-            class="calendar-select"
-            onchange="handleYearChange()"
-          ></select>
-        </div>
-        <div class="filter-box" id="historyFilterBox">
+        <div class="tabs">
+          <button class="tab-btn active" onclick="switchTab('calc-tab')">
+            📊 တွက်ချက်မည်
+          </button>
           <button
-            id="btnFilterWeek"
-            class="active"
+            class="tab-btn"
             onclick="
-              toggleFilterBtn(this);
+              switchTab('history-tab');
               changeFilter('week');
             "
           >
-            ဒီတစ်ပတ်စာ Block
-          </button>
-          <button
-            id="btnFilterMonth"
-            onclick="
-              toggleFilterBtn(this);
-              changeFilter('month');
-            "
-          >
-            ဒီလစာ Blocks
-          </button>
-          <button
-            id="btnFilterAll"
-            onclick="
-              toggleFilterBtn(this);
-              changeFilter('all');
-            "
-          >
-            အားလုံး (နှစ်ချုပ်ပြက္ခဒိန်)
+            📜 စာရင်းဟောင်းများ
           </button>
         </div>
-        <div id="historyContainer"></div>
-        <div id="singleDayDetailBoard" class="detail-container"></div>
+
+        <div id="calc-tab" class="tab-content active">
+          <h2>2D တွက်ချက်ရေးစနစ်</h2>
+          <div class="settings-box">
+            <p class="set-title">⚙️ ချိန်ညှိချက်များ</p>
+            <div class="grid-2">
+              <div class="input-group">
+                <label>ကော်မရှင် (%)</label
+                ><input type="number" id="cfgComm" value="18" step="0.1" />
+              </div>
+              <div class="input-group">
+                <label>မိမိအမြတ် (%)</label
+                ><input type="number" id="cfgMyProfit" value="2.5" step="0.1" />
+              </div>
+            </div>
+          </div>
+
+          <div class="section-title">☀️ မနက်ပိုင်း</div>
+          <div class="grid-2">
+            <div class="input-group">
+              <label>ရောင်းရငွေ (T)</label
+              ><input
+                type="number"
+                id="amSales"
+                placeholder="0"
+                inputmode="numeric"
+              />
+            </div>
+            <div class="input-group">
+              <label>လျော်ရငွေ (P)</label
+              ><input
+                type="number"
+                id="amPayout"
+                placeholder="0"
+                inputmode="numeric"
+              />
+            </div>
+          </div>
+
+          <div class="section-title">🌙 ညနေပိုင်း</div>
+          <div class="grid-2">
+            <div class="input-group">
+              <label>ရောင်းရငွေ (T)</label
+              ><input
+                type="number"
+                id="pmSales"
+                placeholder="0"
+                inputmode="numeric"
+              />
+            </div>
+            <div class="input-group">
+              <label>လျော်ရငွေ (P)</label
+              ><input
+                type="number"
+                id="pmPayout"
+                placeholder="0"
+                inputmode="numeric"
+              />
+            </div>
+          </div>
+
+          <button class="btn-main" onclick="handleCalculateAndSave()">
+            တွက်ချက်ပြီး ဒေတာသိမ်းမည်
+          </button>
+
+          <div class="result-board" id="resultBoard">
+            <div class="session-result">
+              <h4 style="color: #2563eb; margin-bottom: 8px">
+                ☀️ မနက်ပိုင်း ရလဒ်
+              </h4>
+              <div class="res-row input-origin">
+                <span
+                  >📥 ရောင်းရငွေ (T):
+                  <strong id="rAmOriginSales">0</strong></span
+                >
+                <span
+                  >💸 လျော်ရငွေ (P):
+                  <strong id="rAmOriginPayout">0</strong></span
+                >
+              </div>
+              <div class="res-row">
+                <span>ကော်မရှင်နုတ်ပြီး အရောင်း:</span
+                ><span id="rAmCommSales">0 ကျပ်</span>
+              </div>
+              <div class="res-row">
+                <span>အမှန်လျော်ရငွေ (x80):</span
+                ><span id="rAmActualPayout" class="minus-text">0 ကျပ်</span>
+              </div>
+              <div class="res-row bold">
+                <span>Total Profit (ဒိုင်အမြတ်):</span
+                ><span id="rAmTotalProfit" class="blue-text">0 ကျပ်</span>
+              </div>
+              <div class="res-row">
+                <span>မိမိအမြတ်ငွေ:</span
+                ><span id="rAmMyProfit" class="plus-text">0 ကျပ်</span>
+              </div>
+            </div>
+
+            <div class="session-result">
+              <h4 style="color: #7c3aed; margin-bottom: 8px">
+                🌙 ညနေပိုင်း ရလဒ်
+              </h4>
+              <div class="res-row input-origin">
+                <span
+                  >📥 ရောင်းရငွေ (T):
+                  <strong id="rPmOriginSales">0</strong></span
+                >
+                <span
+                  >💸 လျော်ရငွေ (P):
+                  <strong id="rPmOriginPayout">0</strong></span
+                >
+              </div>
+              <div class="res-row">
+                <span>ကော်မရှင်နုတ်ပြီး အရောင်း:</span
+                ><span id="rPmCommSales">0 ကျပ်</span>
+              </div>
+              <div class="res-row">
+                <span>အမှန်လျော်ရငွေ (x80):</span
+                ><span id="rPmActualPayout" class="minus-text">0 ကျပ်</span>
+              </div>
+              <div class="res-row bold">
+                <span>Total Profit (ဒိုင်အမြတ်):</span
+                ><span id="rPmTotalProfit" class="blue-text">0 ကျပ်</span>
+              </div>
+              <div class="res-row">
+                <span>မိမိအမြတ်ငွေ:</span
+                ><span id="rPmMyProfit" class="plus-text">0 ကျပ်</span>
+              </div>
+            </div>
+
+            <div class="summary-box day-profit-box">
+              <h3 style="color: #1e40af">
+                📊 တစ်နေ့တာ စုစုပေါင်း ဒိုင်အမြတ်ငွေ (Total Profit)
+              </h3>
+              <div class="final-amount" id="rFinalDayProfit">0 ကျပ်</div>
+            </div>
+            <div class="summary-box day-myprofit-box">
+              <h3 style="color: #065f46">
+                💰 တစ်နေ့တာ စုစုပေါင်း မိမိအမြတ်ငွေ
+              </h3>
+              <div class="final-amount" id="rFinalMyProfit">0 ကျပ်</div>
+            </div>
+
+            <div class="block-card">
+              <div class="block-header" id="calcBlockTitle">
+                📅 လက်ရှိပတ် Weekly Block
+              </div>
+              <div class="table-responsive-wrapper">
+                <table class="w-table">
+                  <thead>
+                    <tr>
+                      <th>ရက်စွဲ (နေ့)</th>
+                      <th>မနက်(ဒိုင်)</th>
+                      <th>မနက်(မိမိ)</th>
+                      <th>ညနေ(ဒိုင်)</th>
+                      <th>ညနေ(မိမိ)</th>
+                      <th>စုစုပေါင်း(ဒိုင်)</th>
+                      <th>စုစုပေါင်း(မိမိ)</th>
+                    </tr>
+                  </thead>
+                  <tbody id="calcBlockTableBody"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div id="history-tab" class="tab-content">
+          <h2>📅 ကာလအလိုက် စာရင်းချုပ်</h2>
+          <div id="calendarContainer">
+            <select
+              id="yearSelector"
+              class="calendar-select"
+              onchange="handleYearChange()"
+            ></select>
+          </div>
+          <div class="filter-box" id="historyFilterBox">
+            <button
+              id="btnFilterWeek"
+              class="active"
+              onclick="
+                toggleFilterBtn(this);
+                changeFilter('week');
+              "
+            >
+              ဒီတစ်ပတ်စာ Block
+            </button>
+            <button
+              id="btnFilterMonth"
+              onclick="
+                toggleFilterBtn(this);
+                changeFilter('month');
+              "
+            >
+              ဒီလစာ Blocks
+            </button>
+            <button
+              id="btnFilterAll"
+              onclick="
+                toggleFilterBtn(this);
+                changeFilter('all');
+              "
+            >
+              အားလုံး (နှစ်ချုပ်ပြက္ခဒိန်)
+            </button>
+          </div>
+          <div id="historyContainer"></div>
+          <div id="singleDayDetailBoard" class="detail-container"></div>
+        </div>
       </div>
     </div>
 
