@@ -4,80 +4,68 @@ let navigationState = { level: "root", month: null, weekNum: null };
 let dbCachedRecords = [];
 
 // ==========================================================================
-// 🆕 AUTHENTICATION CORE LOGIC (VERSION 2.3)
+// 🆕 AUTHENTICATION CORE LOGIC (VERSION 2.5 - LOGIN ONLY)
 // ==========================================================================
 
-// App စတင်ပွင့်လာချိန်တွင် အကောင့်ဝင်ထားခြင်း ရှိ/မရှိ အလိုအလျောက် စစ်ဆေးခြင်း
-window.addEventListener("DOMContentLoaded", async () => {
-  const {
-    data: { session },
-  } = await supabaseClient.auth.getSession();
-  if (session && session.user) {
-    showMainApp(session.user);
-  } else {
-    showAuthScreen();
-  }
+// App စတင်ပွင့်လာချိန်တွင် အကောင့်ဝင်ထားခြင်း ရှိ/မရှိ စစ်ဆေးခြင်း
+window.addEventListener('DOMContentLoaded', async () => {
+    const { data: { session } } = await supabaseClient.auth.getSession();
+    if (session && session.user) {
+        showMainApp(session.user);
+    } else {
+        showAuthScreen();
+    }
+    
+    // Calendar auto today select logic
+    const dateInput = document.getElementById('calcTargetDate');
+    if(dateInput) {
+        const today = new Date();
+        const yyyy = today.getFullYear();
+        const mm = String(today.getMonth() + 1).padStart(2, '0');
+        const dd = String(today.getDate()).padStart(2, '0');
+        dateInput.value = `${yyyy}-${mm}-${dd}`;
+    }
 });
 
 function showMainApp(user) {
-  document.getElementById("authSection").style.display = "none";
-  document.getElementById("mainAppSection").style.display = "block";
-  document.getElementById("userDisplayEmail").innerText = user.email;
-  renderHistoryVisual(); // လက်ရှိ User ၏ စာရင်းဟောင်းများကို ဒေတာဘေ့စ်မှ ဆွဲတင်ရန်
+    document.getElementById('authSection').style.display = 'none';
+    document.getElementById('mainAppSection').style.display = 'block';
+    document.getElementById('userDisplayEmail').innerText = user.email.split('@')[0];
+    renderHistoryVisual();
 }
 
 function showAuthScreen() {
-  document.getElementById("authSection").style.display = "block";
-  document.getElementById("mainAppSection").style.display = "none";
+    document.getElementById('authSection').style.display = 'block';
+    document.getElementById('mainAppSection').style.display = 'none';
 }
 
-// အကောင့်သစ်ဖွင့်ခြင်း (Sign Up)
-async function handleSignUp() {
-  const email = document.getElementById("authEmail").value.trim();
-  const password = document.getElementById("authPassword").value.trim();
-  if (!email || !password) {
-    alert("⚠️ Email နှင့် Password ဖြည့်ပါ။");
-    return;
-  }
-
-  const { data, error } = await supabaseClient.auth.signUp({ email, password });
-  if (error) {
-    alert("❌ အကောင့်ဖွင့်ခြင်း မအောင်မြင်ပါ- " + error.message);
-  } else {
-    alert(
-      "✅ အကောင့်ဖွင့်ခြင်း အောင်မြင်ပါသည်။ ကျေးဇူးပြု၍ Login ပြန်ဝင်ပေးပါ။",
-    );
-  }
-}
-
-// အကောင့်ဝင်ခြင်း (Log In)
+// အကောင့်ဝင်ခြင်း (Log In) - Admin ဆောက်ပေးထားသော အကောင့်သာ ဝင်ခွင့်ရမည်
 async function handleLogin() {
-  const email = document.getElementById("authEmail").value.trim();
-  const password = document.getElementById("authPassword").value.trim();
-  if (!email || !password) {
-    alert("⚠️ Email နှင့် Password ဖြည့်ပါ။");
-    return;
-  }
+    const email = document.getElementById('authEmail').value.trim();
+    const password = document.getElementById('authPassword').value.trim();
+    if(!email || !password) { alert("⚠️ Email နှင့် Password ဖြည့်ပါ။"); return; }
 
-  const { data, error } = await supabaseClient.auth.signInWithPassword({
-    email,
-    password,
-  });
-  if (error) {
-    alert("❌ Login ဝင်ခြင်း မအောင်မြင်ပါ- " + error.message);
-  } else {
-    showMainApp(data.user);
-  }
+    const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+    
+    if (error) {
+        // Supabase က Public Sign-up ပိတ်ထားချိန်တွင် မရှိတဲ့အကောင့်နဲ့ လာဝင်ရင် ဖြစ်စေ၊ Password မှားရင်ဖြစ်စေ တက်မည့် Error များ
+        if (error.message.includes("Invalid login credentials")) {
+            alert("❌ အကောင့်ဝင်ခွင့်မရှိပါ။ အီးမေးလ်/လျှို့ဝှက်နံပါတ် မှားယွင်းနေပါသည် သို့မဟုတ် အကောင့်ကို Admin ဘက်မှ မတည်ဆောက်ပေးရသေးပါ။");
+        } else {
+            alert("❌ Login ဝင်ခြင်း မအောင်မြင်ပါ- " + error.message);
+        }
+    } else {
+        showMainApp(data.user);
+    }
 }
 
 // အကောင့်ထွက်ခြင်း (Log Out)
 async function handleLogout() {
-  const { error } = await supabaseClient.auth.signOut();
-  showAuthScreen();
-  // Input ကွက်များ ရှင်းလင်းခြင်း
-  document.getElementById("authEmail").value = "";
-  document.getElementById("authPassword").value = "";
-  document.getElementById("resultBoard").style.display = "none";
+    const { error } = await supabaseClient.auth.signOut();
+    showAuthScreen();
+    document.getElementById('authEmail').value = "";
+    document.getElementById('authPassword').value = "";
+    document.getElementById('resultBoard').style.display = 'none';
 }
 
 // ==========================================================================
