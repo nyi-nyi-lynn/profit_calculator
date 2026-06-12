@@ -3,15 +3,25 @@ let selectedYear = 2026;
 let navigationState = { level: "root", month: null, weekNum: null };
 let dbCachedRecords = [];
 let temporaryCalculatedRecord = null;
+let currentView = "calc-tab";
+let sidebarOpen = false;
+
+const VIEW_TITLE_KEYS = {
+  "calc-tab": "calcTitle",
+  "history-tab": "historyTitle",
+  "settings-tab": "settingsPageTitle",
+};
 
 // ==========================================================================
 // AUTHENTICATION (VERSION 2.6)
 // ==========================================================================
 
 window.addEventListener("DOMContentLoaded", async () => {
+  document.body.classList.add("auth-mode");
   applyLanguage();
   setupNumericInputs();
   refreshStaticTableHeaders();
+  updateSidebarActiveItem();
 
   const dateInput = document.getElementById("calcTargetDate");
   if (dateInput) {
@@ -21,6 +31,10 @@ window.addEventListener("DOMContentLoaded", async () => {
     const dd = String(today.getDate()).padStart(2, "0");
     dateInput.value = `${yyyy}-${mm}-${dd}`;
   }
+
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && sidebarOpen) closeSidebar();
+  });
 
   setGlobalLoading(true);
   try {
@@ -79,15 +93,27 @@ function refreshStaticTableHeaders() {
 }
 
 function showMainApp(user) {
-  document.getElementById("authSection").style.display = "none";
-  document.getElementById("mainAppSection").style.display = "block";
-  document.getElementById("userDisplayEmail").innerText = user.email.split("@")[0];
+  document.getElementById("authWrapper").style.display = "none";
+  document.getElementById("mainAppSection").style.display = "flex";
+  document.body.classList.remove("auth-mode");
+
+  const displayName = user.email.split("@")[0];
+  document.getElementById("userDisplayEmail").innerText = displayName;
+  const fullEmailEl = document.getElementById("userDisplayEmailFull");
+  if (fullEmailEl) fullEmailEl.innerText = user.email;
+  const settingsNameEl = document.getElementById("settingsDisplayName");
+  if (settingsNameEl) settingsNameEl.value = displayName;
+
+  closeSidebar();
+  navigateToView("calc-tab");
   renderHistoryVisual();
 }
 
 function showAuthScreen() {
-  document.getElementById("authSection").style.display = "block";
+  document.getElementById("authWrapper").style.display = "block";
   document.getElementById("mainAppSection").style.display = "none";
+  document.body.classList.add("auth-mode");
+  closeSidebar();
 }
 
 async function handleLogin() {
@@ -119,7 +145,9 @@ async function handleLogin() {
 }
 
 async function handleLogout() {
-  setButtonLoading("btnLogout", true);
+  const btn = document.getElementById("btnLogout");
+  if (btn) btn.disabled = true;
+  closeSidebar();
   setGlobalLoading(true);
   try {
     await supabaseClient.auth.signOut();
@@ -129,7 +157,7 @@ async function handleLogout() {
     document.getElementById("resultBoard").style.display = "none";
     temporaryCalculatedRecord = null;
   } finally {
-    setButtonLoading("btnLogout", false);
+    if (btn) btn.disabled = false;
     setGlobalLoading(false);
   }
 }
@@ -157,15 +185,77 @@ function formatYearLabel(year) {
 }
 
 // ==========================================================================
-// UI NAVIGATION
+// UI NAVIGATION — Mobile shell (header + sidebar)
 // ==========================================================================
 
-function switchTab(tabId) {
+function toggleSidebar() {
+  if (sidebarOpen) closeSidebar();
+  else openSidebar();
+}
+
+function openSidebar() {
+  sidebarOpen = true;
+  document.getElementById("sidebarDrawer").classList.add("open");
+  document.getElementById("sidebarOverlay").classList.add("active");
+  document.getElementById("sidebarDrawer").setAttribute("aria-hidden", "false");
+  document.body.style.overflow = "hidden";
+}
+
+function closeSidebar() {
+  sidebarOpen = false;
+  document.getElementById("sidebarDrawer").classList.remove("open");
+  document.getElementById("sidebarOverlay").classList.remove("active");
+  document.getElementById("sidebarDrawer").setAttribute("aria-hidden", "true");
+  document.body.style.overflow = "";
+  const profileCard = document.getElementById("sidebarProfileCard");
+  if (profileCard) profileCard.classList.remove("highlight");
+}
+
+function focusSidebarProfile() {
+  openSidebar();
+  const profileCard = document.getElementById("sidebarProfileCard");
+  if (profileCard) {
+    profileCard.classList.add("highlight");
+    profileCard.scrollIntoView({ behavior: "smooth", block: "start" });
+    setTimeout(() => profileCard.classList.remove("highlight"), 1800);
+  }
+}
+
+function navigateFromSidebar(viewId) {
+  if (viewId === "history-tab") navigateToView(viewId, { refreshHistory: true });
+  else navigateToView(viewId);
+  closeSidebar();
+}
+
+function navigateToView(viewId, options = {}) {
+  currentView = viewId;
   document.querySelectorAll(".tab-content").forEach((tab) => tab.classList.remove("active"));
-  document.querySelectorAll(".tab-btn").forEach((btn) => btn.classList.remove("active"));
-  document.getElementById(tabId).classList.add("active");
-  if (event) event.currentTarget.classList.add("active");
+  const target = document.getElementById(viewId);
+  if (target) target.classList.add("active");
   document.getElementById("singleDayDetailBoard").style.display = "none";
+  updateHeaderTitle();
+  updateSidebarActiveItem();
+
+  if (viewId === "history-tab" && options.refreshHistory) {
+    changeFilter("week");
+  }
+}
+
+function switchTab(tabId) {
+  navigateToView(tabId, tabId === "history-tab" ? { refreshHistory: true } : {});
+}
+
+function updateHeaderTitle() {
+  const header = document.getElementById("headerTitle");
+  if (!header) return;
+  const key = VIEW_TITLE_KEYS[currentView] || "calcTitle";
+  header.textContent = t(key);
+}
+
+function updateSidebarActiveItem() {
+  document.querySelectorAll(".sidebar-item[data-nav]").forEach((item) => {
+    item.classList.toggle("active", item.getAttribute("data-nav") === currentView);
+  });
 }
 
 function toggleFilterBtn(btn) {

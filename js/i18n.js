@@ -10,7 +10,15 @@ const translations = {
     authNotice:
       "⚠️ အကောင့်မရှိသေးပါက သို့မဟုတ် အသုံးပြုခွင့်သက်တမ်း တိုးလိုပါက Telegram - @nyinyilynn ထံ တိုက်ရိုက် ဆက်သွယ်၍ အကောင့်ရယူပါ။",
     userLabel: "👤 User:",
-    logout: "ထွက်မည် 🚪",
+    logout: "ထွက်မည်",
+    menuProfile: "ကျွန်ုပ်၏ ပရိုဖိုင်",
+    menuCalculator: "2D Calculator",
+    menuHistory: "စာရင်းဟောင်း မှတ်တမ်း",
+    menuSettings: "Settings",
+    settingsPageTitle: "⚙️ ချိန်ညှိချက်များ",
+    displayNameLabel: "အသုံးပြုသူအမည်",
+    languageSetting: "ဘာသာစကား",
+    languageSettingHint: "မြန်မာ / English ပြောင်းရန်",
     tabCalc: "📊 တွက်ချက်မည်",
     tabHistory: "📜 စာရင်းဟောင်းများ",
     calcTitle: "2D တွက်ချက်ရေးစနစ်",
@@ -118,7 +126,15 @@ const translations = {
     authNotice:
       "⚠️ If you don't have an account or need to renew access, contact Telegram @nyinyilynn directly.",
     userLabel: "👤 User:",
-    logout: "Sign Out 🚪",
+    logout: "Sign Out",
+    menuProfile: "My Profile",
+    menuCalculator: "2D Calculator",
+    menuHistory: "History & Reports",
+    menuSettings: "Settings",
+    settingsPageTitle: "⚙️ Settings",
+    displayNameLabel: "Display Name",
+    languageSetting: "Language",
+    languageSettingHint: "Switch between Myanmar and English",
     tabCalc: "📊 Calculate",
     tabHistory: "📜 History",
     calcTitle: "2D Profit Calculator",
@@ -243,6 +259,9 @@ function applyLanguage() {
     btn.textContent = t("langToggle");
     btn.title = currentLang === "mm" ? "Switch to English" : "မြန်မာသို့ပြောင်းရန်";
   });
+
+  if (typeof updateHeaderTitle === "function") updateHeaderTitle();
+  if (typeof updateSidebarActiveItem === "function") updateSidebarActiveItem();
 }
 
 function toggleLanguage() {

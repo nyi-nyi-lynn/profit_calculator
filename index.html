@@ -46,43 +46,7 @@
         background: #2563eb;
         color: white;
       }
-      .user-profile-bar {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        background: #f8fafc;
-        border: 1px solid #e2e8f0;
-        padding: 10px 15px;
-        border-radius: 8px;
-        margin-bottom: 15px;
-        font-size: 13px;
-      }
-      .logout-btn {
-        background: #ef4444;
-        color: white;
-        border: none;
-        padding: 5px 10px;
-        border-radius: 4px;
-        cursor: pointer;
-        font-weight: bold;
-      }
       #authSection { display: block; }
-      #mainAppSection { display: none; }
-      .tabs {
-        display: flex;
-        width: 100%;
-        margin-bottom: 20px;
-        gap: 8px;
-      }
-      .tab-btn {
-        flex: 1;
-        padding: 12px;
-        font-size: 14px;
-        font-weight: bold;
-        border-radius: 8px;
-        cursor: pointer;
-        text-align: center;
-      }
       .grid-2 {
         display: grid;
         grid-template-columns: repeat(2, 1fr);
@@ -256,7 +220,7 @@
       </div>
     </div>
 
-    <div class="app-container">
+    <div id="authWrapper" class="app-container">
       <div id="authSection" class="auth-container">
         <div class="auth-lang-row">
           <button type="button" class="lang-toggle-btn" onclick="toggleLanguage()">EN</button>
@@ -272,37 +236,66 @@
           ⚠️ အကောင့်မရှိသေးပါက သို့မဟုတ် အသုံးပြုခွင့်သက်တမ်း တိုးလိုပါက Telegram - @nyinyilynn ထံ တိုက်ရိုက် ဆက်သွယ်၍ အကောင့်ရယူပါ။
         </p>
       </div>
+    </div>
 
-      <div id="mainAppSection">
-        <div class="user-profile-bar">
-          <span><span data-i18n="userLabel">👤 User:</span> <strong id="userDisplayEmail" style="color: #1e40af">...</strong></span>
-          <div class="profile-actions">
-            <button type="button" class="lang-toggle-btn" onclick="toggleLanguage()">EN</button>
-            <button id="btnLogout" type="button" class="logout-btn" onclick="handleLogout()" data-i18n="logout">ထွက်မည် 🚪</button>
+    <div id="mainAppSection" class="app-shell">
+      <div id="sidebarOverlay" class="sidebar-overlay" onclick="closeSidebar()"></div>
+
+      <aside id="sidebarDrawer" class="sidebar-drawer" aria-hidden="true">
+        <div class="sidebar-brand">
+          <div class="sidebar-brand-title" data-i18n="appTitle">2D Pro System</div>
+        </div>
+
+        <div id="sidebarProfileCard" class="sidebar-profile-card">
+          <div class="sidebar-avatar" aria-hidden="true">👤</div>
+          <div class="sidebar-profile-info">
+            <span class="sidebar-profile-label" data-i18n="menuProfile">ကျွန်ုပ်၏ ပရိုဖိုင်</span>
+            <strong id="userDisplayEmail" class="sidebar-profile-name">...</strong>
+            <span id="userDisplayEmailFull" class="sidebar-profile-email">...</span>
           </div>
         </div>
 
-        <div class="tabs">
-          <button class="tab-btn active" onclick="switchTab('calc-tab')" data-i18n="tabCalc">📊 တွက်ချက်မည်</button>
-          <button class="tab-btn" onclick="switchTab('history-tab'); changeFilter('week');" data-i18n="tabHistory">📜 စာရင်းဟောင်းများ</button>
-        </div>
+        <nav class="sidebar-nav" aria-label="Main navigation">
+          <button type="button" class="sidebar-item" data-nav="profile" onclick="focusSidebarProfile()">
+            <span class="sidebar-icon">👤</span>
+            <span data-i18n="menuProfile">ကျွန်ုပ်၏ ပရိုဖိုင်</span>
+          </button>
+          <button type="button" class="sidebar-item active" data-nav="calc-tab" onclick="navigateFromSidebar('calc-tab')">
+            <span class="sidebar-icon">✨</span>
+            <span data-i18n="menuCalculator">✨ 2D Calculator</span>
+          </button>
+          <button type="button" class="sidebar-item" data-nav="history-tab" onclick="navigateFromSidebar('history-tab')">
+            <span class="sidebar-icon">📜</span>
+            <span data-i18n="menuHistory">📜 စာရင်းဟောင်း မှတ်တမ်း</span>
+          </button>
+          <button type="button" class="sidebar-item" data-nav="settings-tab" onclick="navigateFromSidebar('settings-tab')">
+            <span class="sidebar-icon">⚙️</span>
+            <span data-i18n="menuSettings">⚙️ Settings</span>
+          </button>
+        </nav>
 
+        <div class="sidebar-footer">
+          <button id="btnLogout" type="button" class="sidebar-item sidebar-item-danger" onclick="handleLogout()">
+            <span class="sidebar-icon">🚪</span>
+            <span data-i18n="logout">🚪 ထွက်မည်</span>
+          </button>
+        </div>
+      </aside>
+
+      <header class="app-header" id="appHeader">
+        <button type="button" class="hamburger-btn" onclick="toggleSidebar()" aria-label="Open menu">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
+        </button>
+        <h1 class="header-title" id="headerTitle" data-i18n="calcTitle">2D တွက်ချက်ရေးစနစ်</h1>
+        <button type="button" class="lang-toggle-btn header-lang-btn" onclick="toggleLanguage()">EN</button>
+      </header>
+
+      <main class="app-main">
         <div id="calc-tab" class="tab-content active">
-          <h2 data-i18n="calcTitle">2D တွက်ချက်ရေးစနစ်</h2>
-          <div class="settings-box">
-            <p class="set-title" data-i18n="settingsTitle">⚙️ ချိန်ညှိချက်များ</p>
-            <div class="grid-2">
-              <div class="input-group">
-                <label data-i18n="commission">ကော်မရှင် (%)</label>
-                <input type="text" id="cfgComm" value="18" inputmode="decimal" autocomplete="off" />
-              </div>
-              <div class="input-group">
-                <label data-i18n="myProfit">မိမိအမြတ် (%)</label>
-                <input type="text" id="cfgMyProfit" value="2.5" inputmode="decimal" autocomplete="off" />
-              </div>
-            </div>
-          </div>
-
           <div class="settings-box" style="margin-bottom: 15px">
             <p class="set-title" data-i18n="dateSelectTitle">📅 တွက်ချက်မည့် ရက်စွဲရွေးချယ်ရန်</p>
             <input type="date" id="calcTargetDate" class="calendar-select" style="background-color: #ffffff; color: #1e293b; border: 1px solid #cbd5e1;" />
@@ -387,8 +380,39 @@
           </div>
         </div>
 
+        <div id="settings-tab" class="tab-content">
+          <div class="settings-page-card">
+            <p class="set-title" data-i18n="menuProfile">ကျွန်ုပ်၏ ပရိုဖိုင်</p>
+            <div class="input-group">
+              <label data-i18n="displayNameLabel">အသုံးပြုသူအမည်</label>
+              <input type="text" id="settingsDisplayName" class="settings-display-name" readonly />
+            </div>
+          </div>
+          <div class="settings-page-card">
+            <p class="set-title" data-i18n="settingsTitle">⚙️ ချိန်ညှိချက်များ</p>
+            <div class="grid-2">
+              <div class="input-group">
+                <label data-i18n="commission">ကော်မရှင် (%)</label>
+                <input type="text" id="cfgComm" value="18" inputmode="decimal" autocomplete="off" />
+              </div>
+              <div class="input-group">
+                <label data-i18n="myProfit">မိမိအမြတ် (%)</label>
+                <input type="text" id="cfgMyProfit" value="2.5" inputmode="decimal" autocomplete="off" />
+              </div>
+            </div>
+          </div>
+          <div class="settings-page-card emerald-accent">
+            <div class="settings-row-lang">
+              <div>
+                <p class="set-title" style="margin-bottom: 4px" data-i18n="languageSetting">ဘာသာစကား</p>
+                <p style="font-size: 13px; color: #64748b" data-i18n="languageSettingHint">မြန်မာ / English ပြောင်းရန်</p>
+              </div>
+              <button type="button" class="lang-toggle-btn" onclick="toggleLanguage()">EN</button>
+            </div>
+          </div>
+        </div>
+
         <div id="history-tab" class="tab-content">
-          <h2 data-i18n="historyTitle">📅 ကာလအလိုက် စာရင်းချုပ်</h2>
           <div id="calendarContainer">
             <select id="yearSelector" class="calendar-select" onchange="handleYearChange()"></select>
           </div>
@@ -400,7 +424,7 @@
           <div id="historyContainer"></div>
           <div id="singleDayDetailBoard" class="detail-container"></div>
         </div>
-      </div>
+      </main>
     </div>
 
     <script src="js/supabase-config.js"></script>
