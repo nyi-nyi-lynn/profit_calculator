@@ -30,6 +30,8 @@ window.addEventListener("DOMContentLoaded", async () => {
     const mm = String(today.getMonth() + 1).padStart(2, "0");
     const dd = String(today.getDate()).padStart(2, "0");
     dateInput.value = `${yyyy}-${mm}-${dd}`;
+    dateInput.addEventListener("change", () => updateWeekendSaveUI(dateInput.value));
+    updateWeekendSaveUI(dateInput.value);
   }
 
   document.addEventListener("keydown", (e) => {
@@ -101,6 +103,8 @@ function showMainApp(user) {
   document.getElementById("userDisplayEmail").innerText = displayName;
   const fullEmailEl = document.getElementById("userDisplayEmailFull");
   if (fullEmailEl) fullEmailEl.innerText = user.email;
+  const sidebarNavEmail = document.getElementById("sidebarNavEmail");
+  if (sidebarNavEmail) sidebarNavEmail.innerText = user.email;
   const settingsNameEl = document.getElementById("settingsDisplayName");
   if (settingsNameEl) settingsNameEl.value = displayName;
 
@@ -178,6 +182,55 @@ function isWeekend(dateString) {
   return day === 0 || day === 6;
 }
 
+function updateWeekendSaveUI(dateStr) {
+  const weekend = dateStr && isWeekend(dateStr);
+  const manualBtn = document.getElementById("btnManualSave");
+  const autoChk = document.getElementById("chkAutoSave");
+  const autoSaveWrap = autoChk?.closest("div");
+
+  if (manualBtn && weekend) manualBtn.style.display = "none";
+
+  if (autoChk && autoSaveWrap) {
+    autoChk.disabled = !!weekend;
+    autoSaveWrap.style.opacity = weekend ? "0.55" : "1";
+    autoSaveWrap.style.pointerEvents = weekend ? "none" : "";
+  }
+}
+
+function sumRecordTotals(records) {
+  let totalDay = 0;
+  let totalMy = 0;
+  records.forEach((r) => {
+    totalDay += r.total_day_profit || 0;
+    totalMy += r.total_my_profit || 0;
+  });
+  return { totalDay, totalMy };
+}
+
+function updateHistorySummaryCards(records, visible = true) {
+  const wrapper = document.getElementById("historySummaryCards");
+  if (!wrapper) return;
+
+  if (!visible || !records.length) {
+    wrapper.hidden = true;
+    return;
+  }
+
+  const { totalDay, totalMy } = sumRecordTotals(records);
+  const dealerEl = document.getElementById("historyFlashDealer");
+  const myEl = document.getElementById("historyFlashMy");
+
+  if (dealerEl) {
+    dealerEl.textContent = totalDay.toLocaleString();
+    dealerEl.style.color = totalDay < 0 ? "#ef4444" : "#2563eb";
+  }
+  if (myEl) {
+    myEl.textContent = totalMy.toLocaleString();
+    myEl.style.color = totalMy < 0 ? "#ef4444" : "#10b981";
+  }
+  wrapper.hidden = false;
+}
+
 function formatYearLabel(year) {
   return currentLang === "mm"
     ? `${year} ${t("yearSuffix")}`
@@ -209,16 +262,6 @@ function closeSidebar() {
   document.body.style.overflow = "";
   const profileCard = document.getElementById("sidebarProfileCard");
   if (profileCard) profileCard.classList.remove("highlight");
-}
-
-function focusSidebarProfile() {
-  openSidebar();
-  const profileCard = document.getElementById("sidebarProfileCard");
-  if (profileCard) {
-    profileCard.classList.add("highlight");
-    profileCard.scrollIntoView({ behavior: "smooth", block: "start" });
-    setTimeout(() => profileCard.classList.remove("highlight"), 1800);
-  }
 }
 
 function navigateFromSidebar(viewId) {
@@ -464,10 +507,15 @@ async function handleCalculateAndDecision() {
   );
 
   const isAutoSaveChecked = document.getElementById("chkAutoSave").checked;
+  const isWeekendDate = isWeekend(chosenDateStr);
+  updateWeekendSaveUI(chosenDateStr);
 
   setButtonLoading("btnCalculate", true);
   try {
-    if (isAutoSaveChecked) {
+    if (isWeekendDate) {
+      document.getElementById("btnManualSave").style.display = "none";
+      showToast(t("toastWeekendNoSave"), "warning");
+    } else if (isAutoSaveChecked) {
       document.getElementById("btnManualSave").style.display = "none";
       await executeSaveProcess(temporaryCalculatedRecord);
     } else {
@@ -521,11 +569,17 @@ function renderResultsToUI(
   document.getElementById("calcBlockTitle").innerText = `📋 ${formatYearLabel(dateObj.getFullYear())} ${cMonthText} (${cWeekText}) ${t("weekSummary")}`;
 
   document.getElementById("resultBoard").style.display = "block";
+  updateWeekendSaveUI(chosenDateStr);
   if (refreshTable) refreshWeeklyTableBlock(chosenDateStr);
 }
 
 async function handleManualSaveAction() {
   if (!temporaryCalculatedRecord) return;
+  if (isWeekend(temporaryCalculatedRecord.record_date)) {
+    showToast(t("toastWeekendNoSave"), "warning");
+    document.getElementById("btnManualSave").style.display = "none";
+    return;
+  }
   setButtonLoading("btnManualSave", true);
   setGlobalLoading(true);
   try {
@@ -538,6 +592,10 @@ async function handleManualSaveAction() {
 }
 
 async function executeSaveProcess(recordObj) {
+  if (isWeekend(recordObj.record_date)) {
+    showToast(t("toastWeekendNoSave"), "warning");
+    return;
+  }
   setGlobalLoading(true);
   try {
     const result = await saveDailyRecord(recordObj);
@@ -578,6 +636,7 @@ async function renderHistoryVisual() {
   if (!container) return;
   container.innerHTML = "";
   document.getElementById("singleDayDetailBoard").style.display = "none";
+  updateHistorySummaryCards([], false);
 
   setGlobalLoading(true);
   try {
@@ -595,6 +654,7 @@ async function renderHistoryVisual() {
           getWeekNumber(r.record_date) === currentWeekNum,
       );
 
+      updateHistorySummaryCards(records, records.length > 0);
       container.innerHTML = `
         <div class="block-card">
           <div class="block-header">📊 ${formatYearLabel(thisYear)} ${getLocalizedMonthName(thisMonth)} (${getLocalizedWeekName(today.toISOString().split("T")[0])}) ${t("weekSummary")}</div>
@@ -611,6 +671,7 @@ async function renderHistoryVisual() {
         const d = new Date(r.record_date);
         return d.getFullYear() === thisYear && d.getMonth() + 1 === thisMonth;
       });
+      updateHistorySummaryCards(currentMonthRecords, currentMonthRecords.length > 0);
       renderWeeksLevel(
         currentMonthRecords,
         container,
@@ -623,6 +684,7 @@ async function renderHistoryVisual() {
 
       if (navigationState.level === "root") {
         document.getElementById("historyFilterBox").style.display = "flex";
+        updateHistorySummaryCards(filteredByYear, filteredByYear.length > 0);
         const monthlyGrouped = {};
         filteredByYear.forEach((row) => {
           const mNum = new Date(row.record_date).getMonth() + 1;
@@ -657,8 +719,10 @@ async function renderHistoryVisual() {
             </div>`;
           container.appendChild(blockDiv);
         });
-        if (sortedMonths.length === 0)
+        if (sortedMonths.length === 0) {
+          updateHistorySummaryCards([], false);
           container.innerHTML = `<p style='text-align:center; padding:20px;'>${t("noData")}</p>`;
+        }
       } else if (navigationState.level === "month") {
         document.getElementById("historyFilterBox").style.display = "none";
         const backBtn = document.createElement("button");
@@ -673,6 +737,7 @@ async function renderHistoryVisual() {
         const monthRecords = filteredByYear.filter(
           (r) => new Date(r.record_date).getMonth() + 1 === navigationState.month,
         );
+        updateHistorySummaryCards(monthRecords, monthRecords.length > 0);
         renderWeeksLevel(
           monthRecords,
           container,
@@ -696,6 +761,7 @@ async function renderHistoryVisual() {
         );
         const sampleDate = weekRecords[0] ? weekRecords[0].record_date : "";
 
+        updateHistorySummaryCards(weekRecords, weekRecords.length > 0);
         const card = document.createElement("div");
         card.className = "block-card";
         card.innerHTML = `
