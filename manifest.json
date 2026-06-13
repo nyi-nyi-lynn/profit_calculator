@@ -1,0 +1,21 @@
+{
+  "name": "အမြတ်ရာခိုင်နှုန်း တွက်ချက်ရေးစနစ်",
+  "short_name": "အမြတ်ရာခိုင်နှုန်း တွက်ချက်ရေးစနစ်",
+  "start_url": ".",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#2563eb",
+  "icons": [
+    {
+      "src": "assets/logo.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "assets/logo.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

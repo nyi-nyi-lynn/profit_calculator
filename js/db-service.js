@@ -17,22 +17,49 @@ async function saveDailyRecord(recordData) {
     .select();
 
   if (error) console.error("Error saving data:", error.message);
+  if (!error) {
+    // update local cache immediately so UI can reuse fresh data without refetching
+    try {
+      _recordsCache.data = data || [];
+      _recordsCache.ts = Date.now();
+    } catch (e) {
+      // ignore if cache isn't available in this scope
+    }
+  }
   return error ? null : data;
 }
 
 // 🆕 ဒေတာဆွဲယူရာတွင် RLS ရှိနေသဖြင့် ဝင်ထားသော User ၏ ဒေတာများကိုသာ Auto စစ်ထုတ်ပေးမည်
 // 🆕 ဒေတာဆွဲယူရာတွင် လက်ရှိ Login ဝင်ထားသော User ID ၏ ဒေတာသက်သက်ကိုသာ စစ်ထုတ်ယူခြင်း
 async function getAllRecordsFromDB() {
-    // ၁။ လက်ရှိ Login ဝင်ထားတဲ့ user ကို အရင်တောင်းရယူရပါမယ်
-    const { data: { user } } = await supabaseClient.auth.getUser();
-    if (!user) return []; // User မရှိရင် ဘာဒေတာမှ မပြဘဲ ပိတ်မည်
+    // Lightweight in-module cache to avoid redundant network calls during rapid UI interactions
+    // TTL kept small so recent saves reflect quickly but repetitive UI re-renders don't refetch constantly
+  }
 
-    // ၂။ ဒေတာဘေ့စ်ထဲက user_id ကွင်းပြင်သည် လက်ရှိ user.id နှင့် တူညီသော record များကိုသာ ဆွဲယူမည်
+  // In-module cache
+  let _recordsCache = { data: [], ts: 0 };
+  const RECORDS_CACHE_TTL = 30 * 1000; // 30 seconds
+
+  // Fetch all records for current logged-in user with optional force refresh
+  async function getAllRecordsFromDB(forceRefresh = false) {
+    if (!forceRefresh && _recordsCache.data.length && Date.now() - _recordsCache.ts < RECORDS_CACHE_TTL) {
+      return _recordsCache.data;
+    }
+
+    const { data: { user } } = await supabaseClient.auth.getUser();
+    if (!user) return [];
+
     const { data, error } = await supabaseClient
-        .from('daily_records')
-        .select('*')
-        .eq('user_id', user.id) // 🎯 ဤနေရာတွင် လက်ရှိ User ဒေတာတစ်ခုတည်းဖြစ်အောင် အသေသပ် စစ်ထုတ်လိုက်ပါပြီ
-        .order('record_date', { ascending: true });
-        
-    return error ? [] : data;
+      .from('daily_records')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('record_date', { ascending: true });
+
+    if (error) {
+      console.error('Error fetching records:', error.message || error);
+      return [];
+    }
+
+    _recordsCache = { data: data || [], ts: Date.now() };
+    return _recordsCache.data;
 }

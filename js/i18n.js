@@ -2,7 +2,7 @@ let currentLang = localStorage.getItem("2dpro_lang") || "mm";
 
 const translations = {
   mm: {
-    appTitle: "2D Pro System",
+    appTitle: "2D Profit Calculator",
     authSubtitle: "စနစ်ကို အသုံးပြုရန် အကောင့်ဝင်ပါ",
     authEmailPlaceholder: "အီးမေးလ်",
     authPasswordPlaceholder: "လျှို့ဝှက်နံပါတ်",
@@ -120,7 +120,7 @@ const translations = {
     yearSuffix: "ခုနှစ်",
   },
   en: {
-    appTitle: "2D Pro System",
+    appTitle: "2D Profit Calculator",
     authSubtitle: "Sign in to use the system",
     authEmailPlaceholder: "Email",
     authPasswordPlaceholder: "Password",
@@ -250,7 +250,7 @@ function t(key, params = {}) {
 
 function applyLanguage() {
   document.documentElement.lang = currentLang === "mm" ? "my" : "en";
-  document.title = `2D Pro - Version 2.6 (${currentLang === "mm" ? "MM" : "EN"})`;
+  document.title = `2D Profit Calculator (${currentLang === "mm" ? "MM" : "EN"})`;
 
   document.querySelectorAll("[data-i18n]").forEach((el) => {
     el.textContent = t(el.getAttribute("data-i18n"));
