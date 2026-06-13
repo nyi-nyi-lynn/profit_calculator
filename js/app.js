@@ -111,6 +111,61 @@ function showMainApp(user) {
   closeSidebar();
   navigateToView("calc-tab");
   renderHistoryVisual();
+
+  // Load and apply per-user settings (commission / my profit)
+  if (typeof loadAndApplyUserSettings === "function") loadAndApplyUserSettings();
+}
+
+// Load user-specific settings from `user_settings` and apply to UI inputs
+async function loadAndApplyUserSettings() {
+  try {
+    const settings = await getUserSettings();
+    const commEl = document.getElementById('cfgComm');
+    const myEl = document.getElementById('cfgMyProfit');
+    if (settings) {
+      if (commEl && settings.comm_percent !== null && settings.comm_percent !== undefined) commEl.value = String(settings.comm_percent);
+      if (myEl && settings.my_profit_percent !== null && settings.my_profit_percent !== undefined) myEl.value = String(settings.my_profit_percent);
+    }
+
+    const saveButton = document.getElementById('btnSaveSettings');
+    if (saveButton) {
+      saveButton.onclick = async () => {
+        const success = await saveUserSettingsFromUI();
+        if (success) {
+          showToast('✅ ပြင်ဆင်သတ်မှတ်ချက်များကို စနစ်တွင်းသို့ မှတ်သားပြီးပါပြီ။', 'success');
+        }
+      };
+    }
+  } catch (e) {
+    console.error('loadAndApplyUserSettings', e);
+  }
+}
+
+// Read UI values and upsert into user_settings table
+async function saveUserSettingsFromUI() {
+  try {
+    const commRaw = document.getElementById('cfgComm')?.value.trim();
+    const myRaw = document.getElementById('cfgMyProfit')?.value.trim();
+    if (!isValidNonNegativeNumber(commRaw, false) || !isValidNonNegativeNumber(myRaw, false)) {
+      showToast(t('toastInvalidInput'), 'warning');
+      return null;
+    }
+    const comm = parseFloat(commRaw);
+    const my = parseFloat(myRaw);
+
+    setGlobalLoading(true);
+    const res = await upsertUserSettings({ comm_percent: comm, my_profit_percent: my });
+    if (!res) {
+      showToast('❌ Unable to save settings', 'error');
+    }
+    return res;
+  } catch (e) {
+    console.error('saveUserSettingsFromUI', e);
+    showToast('❌ Unable to save settings', 'error');
+    return null;
+  } finally {
+    setGlobalLoading(false);
+  }
 }
 
 function showAuthScreen() {

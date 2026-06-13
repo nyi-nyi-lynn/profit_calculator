@@ -8,7 +8,7 @@ const translations = {
     authPasswordPlaceholder: "လျှို့ဝှက်နံပါတ်",
     authLogin: "🔑 ဝင်ရောက်မည်",
     authNotice:
-      "⚠️ အကောင့်မရှိသေးပါက သို့မဟုတ် အသုံးပြုခွင့်သက်တမ်း တိုးလိုပါက Telegram - @nyinyilynn ထံ တိုက်ရိုက် ဆက်သွယ်၍ အကောင့်ရယူပါ။",
+      "⚠️ အကောင့်မရှိသေးပါက  Telegram - @nyinyilynn ထံ တိုက်ရိုက် ဆက်သွယ်၍ အကောင့်ရယူပါ။",
     userLabel: "👤 User:",
     logout: "ထွက်မည်",
     menuProfile: "ကျွန်ုပ်၏ ပရိုဖိုင်",
@@ -43,6 +43,7 @@ const translations = {
     totalDealerProfit: "📊 စုစုပေါင်း ဒိုင်အမြတ်ငွေ",
     totalMyProfit: "💰 စုစုပေါင်း မိမိအမြတ်ငွေ",
     btnManualSave: "💾 စနစ်တွင်းသို့ သိမ်းဆည်းမည်",
+    settingsSaveButton: "⚙️ ချိန်ညှိချက်များကို မှတ်သားမည်",
     weeklyBlockDefault: "📅 ယခုအပတ် စာရင်းချုပ်",
     historyTitle: "📜 အပတ်စဉ် မှတ်တမ်း",
     filterWeek: "ယခုအပတ် စာရင်းချုပ်",
@@ -161,6 +162,7 @@ const translations = {
     totalDealerProfit: "📊 Total Dealer Profit",
     totalMyProfit: "💰 Total My Profit",
     btnManualSave: "💾 Save to system",
+    settingsSaveButton: "⚙️ Save Settings",
     weeklyBlockDefault: "📅 Current week summary",
     historyTitle: "📜 Weekly records",
     filterWeek: "This week summary",
@@ -263,6 +265,11 @@ function applyLanguage() {
     btn.textContent = t("langToggle");
     btn.title = currentLang === "mm" ? "Switch to English" : "မြန်မာသို့ပြောင်းရန်";
   });
+
+  const saveSettingsBtn = document.getElementById("btnSaveSettings");
+  if (saveSettingsBtn) {
+    saveSettingsBtn.innerText = t("settingsSaveButton");
+  }
 
   if (typeof updateHeaderTitle === "function") updateHeaderTitle();
   if (typeof updateSidebarActiveItem === "function") updateSidebarActiveItem();

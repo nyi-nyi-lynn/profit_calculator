@@ -63,3 +63,62 @@ async function getAllRecordsFromDB() {
     _recordsCache = { data: data || [], ts: Date.now() };
     return _recordsCache.data;
 }
+
+// --------------------------------------------------------------------------
+// User-specific settings helpers (user_settings table)
+// --------------------------------------------------------------------------
+
+async function getUserSettings(userId = null) {
+  try {
+    let uid = userId;
+    if (!uid) {
+      const { data: { user } } = await supabaseClient.auth.getUser();
+      uid = user?.id;
+    }
+    if (!uid) return null;
+
+    const { data, error } = await supabaseClient
+      .from('user_settings')
+      .select('*')
+      .eq('user_id', uid)
+      .maybeSingle();
+
+    if (error) {
+      console.error('Error fetching user settings:', error.message || error);
+      return null;
+    }
+    return data || null;
+  } catch (e) {
+    console.error('getUserSettings error', e);
+    return null;
+  }
+}
+
+async function upsertUserSettings({ comm_percent, my_profit_percent }) {
+  try {
+    const { data: { user } } = await supabaseClient.auth.getUser();
+    if (!user) return null;
+
+    const payload = {
+      user_id: user.id,
+      comm_percent: comm_percent ?? null,
+      my_profit_percent: my_profit_percent ?? null,
+    };
+
+    const { data, error } = await supabaseClient
+      .from('user_settings')
+      .upsert(payload, { onConflict: 'user_id' })
+      .select()
+      .maybeSingle();
+
+    if (error) {
+      console.error('Error upserting user settings:', error.message || error);
+      return null;
+    }
+
+    return data || null;
+  } catch (e) {
+    console.error('upsertUserSettings error', e);
+    return null;
+  }
+}
