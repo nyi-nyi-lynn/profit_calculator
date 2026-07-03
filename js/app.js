@@ -168,7 +168,61 @@ async function saveUserSettingsFromUI() {
   }
 }
 
+function clearUserSessionUI() {
+  dbCachedRecords = [];
+  temporaryCalculatedRecord = null;
+  if (typeof clearRecordsCache === "function") clearRecordsCache();
+
+  const resultBoard = document.getElementById("resultBoard");
+  if (resultBoard) resultBoard.style.display = "none";
+
+  const calcTableBody = document.getElementById("calcBlockTableBody");
+  if (calcTableBody) calcTableBody.innerHTML = "";
+
+  const historyContainer = document.getElementById("historyContainer");
+  if (historyContainer) historyContainer.innerHTML = "";
+
+  const detailBoard = document.getElementById("singleDayDetailBoard");
+  if (detailBoard) {
+    detailBoard.innerHTML = "";
+    detailBoard.style.display = "none";
+  }
+
+  const summaryCards = document.getElementById("historySummaryCards");
+  if (summaryCards) summaryCards.hidden = true;
+
+  const dealerEl = document.getElementById("historyFlashDealer");
+  const myEl = document.getElementById("historyFlashMy");
+  if (dealerEl) dealerEl.textContent = "0";
+  if (myEl) myEl.textContent = "0";
+
+  const resultFieldIds = [
+    "rAmOriginSales",
+    "rAmOriginPayout",
+    "rPmOriginSales",
+    "rPmOriginPayout",
+    "rAmCommSales",
+    "rAmActualPayout",
+    "rAmTotalProfit",
+    "rAmMyProfit",
+    "rPmCommSales",
+    "rPmActualPayout",
+    "rPmTotalProfit",
+    "rPmMyProfit",
+    "rFinalDayProfit",
+    "rFinalMyProfit",
+  ];
+  resultFieldIds.forEach((id) => {
+    const el = document.getElementById(id);
+    if (el) el.innerText = "";
+  });
+
+  const manualSaveBtn = document.getElementById("btnManualSave");
+  if (manualSaveBtn) manualSaveBtn.style.display = "none";
+}
+
 function showAuthScreen() {
+  clearUserSessionUI();
   document.getElementById("authWrapper").style.display = "block";
   document.getElementById("mainAppSection").style.display = "none";
   document.body.classList.add("auth-mode");
@@ -210,11 +264,10 @@ async function handleLogout() {
   setGlobalLoading(true);
   try {
     await supabaseClient.auth.signOut();
+    clearUserSessionUI();
     showAuthScreen();
     document.getElementById("authEmail").value = "";
     document.getElementById("authPassword").value = "";
-    document.getElementById("resultBoard").style.display = "none";
-    temporaryCalculatedRecord = null;
   } finally {
     if (btn) btn.disabled = false;
     setGlobalLoading(false);
@@ -334,8 +387,12 @@ function navigateToView(viewId, options = {}) {
   updateHeaderTitle();
   updateSidebarActiveItem();
 
-  if (viewId === "history-tab" && options.refreshHistory) {
-    changeFilter("week");
+  if (viewId === "history-tab") {
+    if (options.refreshHistory) {
+      changeFilter("week");
+    } else {
+      void renderHistoryVisual();
+    }
   }
 }
 
@@ -655,8 +712,13 @@ async function executeSaveProcess(recordObj) {
   try {
     const result = await saveDailyRecord(recordObj);
     if (result !== null) {
+      const freshRecords = await getAllRecordsFromDB(true);
+      dbCachedRecords = freshRecords;
       showToast(t("toastSaveSuccess"), "success");
-      await refreshWeeklyTableBlock(recordObj.record_date);
+      await refreshWeeklyTableBlock(recordObj.record_date, freshRecords);
+      if (currentView === "history-tab") {
+        await renderHistoryVisual(freshRecords);
+      }
     } else {
       showToast(t("toastSaveFailed"), "error");
     }
@@ -665,18 +727,20 @@ async function executeSaveProcess(recordObj) {
   }
 }
 
-async function refreshWeeklyTableBlock(targetDateStr) {
+async function refreshWeeklyTableBlock(targetDateStr, recordsOverride = null) {
   setGlobalLoading(true);
   try {
-    dbCachedRecords = await getAllRecordsFromDB();
+    const freshRecords = recordsOverride ?? (await getAllRecordsFromDB(true));
+    dbCachedRecords = freshRecords;
     const currentWNum = getWeekNumber(targetDateStr);
     const targetYear = new Date(targetDateStr).getFullYear();
-    const currentWeekRecords = dbCachedRecords.filter(
+    const currentWeekRecords = freshRecords.filter(
       (r) =>
         new Date(r.record_date).getFullYear() === targetYear &&
         getWeekNumber(r.record_date) === currentWNum,
     );
-    document.getElementById("calcBlockTableBody").innerHTML = generateBlockRows(currentWeekRecords);
+    const calcTableBody = document.getElementById("calcBlockTableBody");
+    if (calcTableBody) calcTableBody.innerHTML = generateBlockRows(currentWeekRecords);
   } finally {
     setGlobalLoading(false);
   }
@@ -686,7 +750,7 @@ async function refreshWeeklyTableBlock(targetDateStr) {
 // HISTORY VIEW
 // ==========================================================================
 
-async function renderHistoryVisual() {
+async function renderHistoryVisual(recordsOverride = null) {
   const container = document.getElementById("historyContainer");
   if (!container) return;
   container.innerHTML = "";
@@ -695,7 +759,8 @@ async function renderHistoryVisual() {
 
   setGlobalLoading(true);
   try {
-    dbCachedRecords = await getAllRecordsFromDB();
+    const freshRecords = recordsOverride ?? (await getAllRecordsFromDB(true));
+    dbCachedRecords = freshRecords;
     const today = new Date();
     const thisYear = today.getFullYear();
     const thisMonth = today.getMonth() + 1;
@@ -703,7 +768,7 @@ async function renderHistoryVisual() {
     if (currentFilter === "week") {
       document.getElementById("historyFilterBox").style.display = "flex";
       const currentWeekNum = getWeekNumber(today);
-      const records = dbCachedRecords.filter(
+      const records = freshRecords.filter(
         (r) =>
           new Date(r.record_date).getFullYear() === thisYear &&
           getWeekNumber(r.record_date) === currentWeekNum,
@@ -722,7 +787,7 @@ async function renderHistoryVisual() {
         </div>`;
     } else if (currentFilter === "month") {
       document.getElementById("historyFilterBox").style.display = "flex";
-      const currentMonthRecords = dbCachedRecords.filter((r) => {
+      const currentMonthRecords = freshRecords.filter((r) => {
         const d = new Date(r.record_date);
         return d.getFullYear() === thisYear && d.getMonth() + 1 === thisMonth;
       });
@@ -733,7 +798,7 @@ async function renderHistoryVisual() {
         `${formatYearLabel(thisYear)} ${getLocalizedMonthName(thisMonth)}`,
       );
     } else if (currentFilter === "all") {
-      const filteredByYear = dbCachedRecords.filter(
+      const filteredByYear = freshRecords.filter(
         (r) => new Date(r.record_date).getFullYear() === selectedYear,
       );
 
